@@ -9,7 +9,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -23,16 +23,36 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: var(--color-neutral-800);
-    --color-accent-content: var(--color-neutral-800);
+    /* Brand palette, matched from teretoapps.com */
+    --color-teal: #1D9E75;
+    --color-teal-deep: #085041;
+    --color-teal-bg: #E1F5EE;
+    --color-teal-border: #9FE1CB;
+    --color-amber: #EF9F27;
+    --color-amber-bg: #FAEEDA;
+    --color-brand-text: #1A1A18;
+    --color-brand-text-muted: #5F5E5A;
+    --color-brand-off-white: #F8F8F5;
+
+    --color-accent: var(--color-teal);
+    --color-accent-content: var(--color-teal-deep);
     --color-accent-foreground: var(--color-white);
 }
 
 @layer theme {
     .dark {
-        --color-accent: var(--color-white);
-        --color-accent-content: var(--color-white);
-        --color-accent-foreground: var(--color-neutral-800);
+        --color-accent: var(--color-teal);
+        --color-accent-content: var(--color-teal-deep);
+        --color-accent-foreground: var(--color-white);
+
+        /* Brand palette, re-tuned for readability on dark surfaces */
+        --color-teal: #34D399;
+        --color-teal-deep: #6EE7B7;
+        --color-teal-bg: #0B3B30;
+        --color-teal-border: #1F6F57;
+        --color-amber-bg: #3A2A12;
+        --color-brand-text: #F4F4F5;
+        --color-brand-text-muted: #A1A1AA;
     }
 }
 

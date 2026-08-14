@@ -7,6 +7,7 @@
     "login_forgot_password": "¿Olvidaste tu contraseña?",
     "login_remember_me": "Recuérdame",
     "login_submit": "Iniciar sesión",
+    "login_submitting": "Iniciando sesión...",
     "login_no_account": "¿No tienes una cuenta?",
     "login_sign_up": "Regístrate",
     "passkey_sign_in": "Inicia sesión con una clave de paso",

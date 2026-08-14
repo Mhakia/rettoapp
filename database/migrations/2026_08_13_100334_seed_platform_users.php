@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -10,25 +11,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Random passwords: these accounts must go through "forgot password" before first login.
+        // TEAM_PASSWORD in .env; falls back to a random password (forces "forgot password") if unset.
+        $password = config('services.team_password') ?: Str::random(32);
+
         $superAdmin = User::create([
             'name' => 'Ana Torres',
             'email' => 'superadmin@tereto.app',
-            'password' => 'Super-123456',
+            'password' => $password,
         ]);
         $superAdmin->assignRole('super_admin');
 
         $manager = User::create([
             'name' => 'Carlos Ruiz',
             'email' => 'manager@tereto.app',
-            'password' => 'Super-123456',
+            'password' => $password,
         ]);
         $manager->assignRole('manager');
 
         $pedagogue = User::create([
             'name' => 'Laura Gómez',
             'email' => 'pedagogue@tereto.app',
-            'password' => 'Super-123456',
+            'password' => $password,
         ]);
         $pedagogue->assignRole('pedagogue');
     }

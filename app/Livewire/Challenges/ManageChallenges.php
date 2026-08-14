@@ -32,6 +32,13 @@ class ManageChallenges extends Component
 
     public array $institutionUuids = [];
 
+    public function mount(): void
+    {
+        if ($preselected = request()->query('institution')) {
+            $this->institutionUuids = [$preselected];
+        }
+    }
+
     #[Computed]
     public function challenges()
     {

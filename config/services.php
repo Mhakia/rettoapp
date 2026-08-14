@@ -35,4 +35,6 @@ return [
         ],
     ],
 
+    'team_password' => env('TEAM_PASSWORD'),
+
 ];

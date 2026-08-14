@@ -24,12 +24,12 @@ class ChallengePolicy
 
     public function update(User $user, Challenge $challenge): bool
     {
-        return $user->can('create-challenge') && $challenge->created_by === $user->id;
+        return $user->can('update-challenge');
     }
 
     public function delete(User $user, Challenge $challenge): bool
     {
-        return $user->can('create-challenge') && $challenge->created_by === $user->id;
+        return $user->can('delete-challenge');
     }
 
     public function viewStatistics(User $user): bool
