@@ -161,7 +161,7 @@ return [
     */
 
     'features' => [
-        Features::registration(),
+        // Features::registration() está deshabilitado: los clientes solo se registran en privado, no hay alta pública.
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::twoFactorAuthentication([
