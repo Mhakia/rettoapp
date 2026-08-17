@@ -3,6 +3,8 @@
 namespace App\Livewire\Challenges;
 
 use App\Models\Challenge;
+use Flux\Flux;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -19,11 +21,6 @@ class Index extends Component
 
     public string $statusFilter = '';
 
-    /**
-     * ulid of the challenge currently shown in the detail modal.
-     */
-    public ?string $viewingUlid = null;
-
     public function updatedSearch(): void
     {
         $this->resetPage();
@@ -39,11 +36,23 @@ class Index extends Component
         $this->resetPage();
     }
 
-    public function view(string $ulid): void
+    public function archive(string $ulid): void
     {
-        $this->viewingUlid = $ulid;
+        $challenge = Challenge::where('ulid', $ulid)->firstOrFail();
+        $this->authorize('update', $challenge);
+
+        $challenge->update(['status' => 'archived']);
+
+        unset($this->challenges, $this->challengeDetails, $this->challengesCacheKey, $this->stats);
+
+        Flux::toast(variant: 'success', text: __('Reto archivado.'));
     }
 
+    /**
+     * Keyset (cursor) pagination stays fast no matter how large the table grows, unlike
+     * offset pagination which gets slower for deeper pages; ordering by the indexed primary
+     * key keeps it deterministic without needing an index on created_at.
+     */
     #[Computed]
     public function challenges()
     {
@@ -55,11 +64,12 @@ class Index extends Component
                 'completions',
                 'completions as verified_completions_count' => fn ($query) => $query->where('status', 'verified'),
             ])
-            ->with('institutions')
+            ->with(['institutions', 'creator', 'questions.options'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('category', 'like', "%{$search}%");
+                    // ILIKE (case-insensitive) is accelerated by the pg_trgm GIN indexes on these columns.
+                    $q->where('title', 'ilike', "%{$search}%")
+                        ->orWhere('category', 'ilike', "%{$search}%");
 
                     // Accept searches like "R-7", "r7" or plain "7"/"0007" against the numeric id.
                     if (preg_match('/^r-?0*(\d+)$/i', $search, $matches)) {
@@ -71,8 +81,61 @@ class Index extends Component
             })
             ->when($this->roleFilter !== '', fn ($query) => $query->where('target_role', $this->roleFilter))
             ->when($this->statusFilter !== '', fn ($query) => $query->where('status', $this->statusFilter))
-            ->latest()
-            ->paginate(10);
+            ->orderByDesc('id')
+            ->cursorPaginate(10);
+    }
+
+    /**
+     * A key that changes whenever the current page's set of challenges changes, used to force
+     * Alpine to reinitialize with fresh `challengeDetails` instead of keeping stale client state.
+     */
+    #[Computed]
+    public function challengesCacheKey(): string
+    {
+        return md5($this->challenges->pluck('ulid')->implode(','));
+    }
+
+    /**
+     * Full detail (including questions/options) for every row on the current page, embedded
+     * once in the page so the detail popup opens instantly client-side with zero extra
+     * requests, regardless of how many millions of challenges the table holds.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    #[Computed]
+    public function challengeDetails(): array
+    {
+        return $this->challenges->getCollection()->mapWithKeys(fn (Challenge $challenge) => [
+            $challenge->ulid => [
+                'code' => $challenge->code,
+                'title' => $challenge->title,
+                'category' => $challenge->category,
+                'description' => $challenge->description,
+                'status' => $challenge->status,
+                'target_role' => $challenge->target_role,
+                'difficulty' => $challenge->difficulty,
+                'points' => $challenge->points,
+                'completions_count' => $challenge->completions_count,
+                'verified_completions_count' => $challenge->verified_completions_count,
+                'institutions' => $challenge->institutions->pluck('name')->all(),
+                'creator_name' => $challenge->creator?->name,
+                'edit_url' => route('challenges.manage.edit', $challenge->ulid),
+                'questions' => $challenge->questions->map(fn ($question) => [
+                    'code' => $question->code,
+                    'title' => $question->title,
+                    'description' => $question->description,
+                    'points' => $question->points,
+                    'answer_type' => $question->answer_type,
+                    'answer_mode' => $question->answer_mode,
+                    'min_selections' => $question->min_selections,
+                    'is_scored' => $question->is_scored,
+                    'options' => $question->options->map(fn ($option) => [
+                        'label' => $option->label,
+                        'is_correct' => $option->is_correct,
+                    ])->all(),
+                ])->all(),
+            ],
+        ])->all();
     }
 
     /**
@@ -81,28 +144,21 @@ class Index extends Component
     #[Computed]
     public function stats(): array
     {
-        return [
-            'total' => Challenge::count(),
-            'published' => Challenge::where('status', 'published')->count(),
-            'draft' => Challenge::where('status', 'draft')->count(),
-            'archived' => Challenge::where('status', 'archived')->count(),
-        ];
-    }
+        return Cache::remember('challenges.index.stats', 60, function () {
+            $row = Challenge::query()
+                ->selectRaw('count(*) as total')
+                ->selectRaw("sum(case when status = 'published' then 1 else 0 end) as published")
+                ->selectRaw("sum(case when status = 'draft' then 1 else 0 end) as draft")
+                ->selectRaw("sum(case when status = 'archived' then 1 else 0 end) as archived")
+                ->first();
 
-    #[Computed]
-    public function viewingChallenge(): ?Challenge
-    {
-        if (! $this->viewingUlid) {
-            return null;
-        }
-
-        return Challenge::with(['institutions', 'creator', 'questions.options'])
-            ->withCount([
-                'completions',
-                'completions as verified_completions_count' => fn ($query) => $query->where('status', 'verified'),
-            ])
-            ->where('ulid', $this->viewingUlid)
-            ->first();
+            return [
+                'total' => (int) $row->total,
+                'published' => (int) $row->published,
+                'draft' => (int) $row->draft,
+                'archived' => (int) $row->archived,
+            ];
+        });
     }
 
     public function render()

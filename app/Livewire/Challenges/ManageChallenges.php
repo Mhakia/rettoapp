@@ -37,8 +37,6 @@ class ManageChallenges extends Component
 
     public string $difficulty = 'easy';
 
-    public string $status = 'draft';
-
     /**
      * 'all' publishes to every institution; 'specific' restricts to the picked institutionUuids.
      */
@@ -154,7 +152,6 @@ class ManageChallenges extends Component
         $this->category = $challenge->category;
         $this->points = $challenge->points;
         $this->difficulty = $challenge->difficulty;
-        $this->status = $challenge->status;
         $this->lockedInstitutionUuid = null;
         $this->institutionUuids = $challenge->institutions->pluck('uuid')->all();
         $this->audienceScope = empty($this->institutionUuids) ? 'all' : 'specific';
@@ -256,7 +253,26 @@ class ManageChallenges extends Component
         }
     }
 
+    /**
+     * Saving always keeps (or resets) the challenge as a draft; use publish() to make it live.
+     */
     public function save(): void
+    {
+        $this->persist('draft');
+
+        Flux::toast(variant: 'success', text: __('Reto guardado como borrador.'));
+        $this->redirectRoute('challenges.manage', navigate: true);
+    }
+
+    public function publish(): void
+    {
+        $this->persist('published');
+
+        Flux::toast(variant: 'success', text: __('Reto publicado.'));
+        $this->redirectRoute('challenges.manage', navigate: true);
+    }
+
+    protected function persist(string $status): void
     {
         $challenge = $this->editingId ? Challenge::findOrFail($this->editingId) : null;
         $this->authorize($challenge ? 'update' : 'create', $challenge ?? Challenge::class);
@@ -270,6 +286,8 @@ class ManageChallenges extends Component
 
         $data = $this->validate($this->rules());
         $this->validateQuestionRules($data['questions'] ?? []);
+
+        $data['status'] = $status;
 
         $institutionIds = Institution::whereIn('uuid', $data['institutionUuids'])->pluck('id');
         $questions = $data['questions'] ?? [];
@@ -285,9 +303,6 @@ class ManageChallenges extends Component
             $challenge->institutions()->sync($institutionIds);
             $this->syncQuestions($challenge, $questions);
         });
-
-        Flux::toast(variant: 'success', text: __('Reto guardado.'));
-        $this->redirectRoute('challenges.manage', navigate: true);
     }
 
     protected function rules(): array
@@ -299,7 +314,6 @@ class ManageChallenges extends Component
             'category' => ['required', 'string', 'max:255'],
             'points' => ['required', 'integer', 'min:1', 'max:100000'],
             'difficulty' => ['required', Rule::in(['easy', 'medium', 'hard'])],
-            'status' => ['required', Rule::in(['draft', 'published', 'archived'])],
             'institutionUuids' => ['array', 'max:100'],
             'institutionUuids.*' => ['string', 'exists:institutions,uuid'],
             'questions' => ['array', 'max:20'],

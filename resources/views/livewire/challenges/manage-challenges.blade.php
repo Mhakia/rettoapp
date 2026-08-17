@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <form wire:submit="save" class="space-y-6">
+    <form class="space-y-6">
         <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <div class="mb-5 flex items-start gap-3">
                 <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-bg text-teal-deep">
@@ -25,24 +25,15 @@
             </div>
 
             <div class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <flux:input wire:model="title" :label="__('Título')" />
+                <flux:textarea wire:model="description" :label="__('Descripción')" rows="3" />
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <flux:select wire:model="target_role" :label="__('Dirigido a')">
                         <flux:select.option value="student">{{ __('Estudiante') }}</flux:select.option>
                         <flux:select.option value="teacher">{{ __('Profesor') }}</flux:select.option>
                         <flux:select.option value="guardian">{{ __('Acudiente') }}</flux:select.option>
                     </flux:select>
-
-                    <flux:select wire:model="status" :label="__('Estado')">
-                        <flux:select.option value="draft">{{ __('Borrador') }}</flux:select.option>
-                        <flux:select.option value="published">{{ __('Publicado') }}</flux:select.option>
-                        <flux:select.option value="archived">{{ __('Archivado') }}</flux:select.option>
-                    </flux:select>
-                </div>
-
-                <flux:input wire:model="title" :label="__('Título')" />
-                <flux:textarea wire:model="description" :label="__('Descripción')" rows="3" />
-
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <flux:input wire:model="category" :label="__('Categoría')" />
                     <flux:input wire:model.live="points" type="number" min="1" :label="__('Tope de puntos del reto')" />
                     <flux:select wire:model="difficulty" :label="__('Dificultad')">
@@ -228,8 +219,11 @@
 
         <div class="sticky bottom-4 z-10 flex justify-end gap-2 rounded-xl border border-zinc-200 bg-white/95 p-4 shadow-lg backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/95">
             <flux:button wire:click="cancel" type="button">{{ __('Cancelar') }}</flux:button>
-            <flux:button variant="primary" type="submit" icon="check-circle" class="bg-teal! hover:bg-teal-deep!">
-                {{ $editingId ? __('Actualizar reto') : __('Crear reto') }}
+            <flux:button wire:click="save" type="button" icon="document-check">
+                {{ __('Guardar') }}
+            </flux:button>
+            <flux:button variant="primary" wire:click="publish" type="button" icon="megaphone" class="bg-teal! hover:bg-teal-deep!">
+                {{ __('Publicar') }}
             </flux:button>
         </div>
     </form>

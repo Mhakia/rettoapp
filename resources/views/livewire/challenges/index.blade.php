@@ -33,6 +33,20 @@
         </div>
     </div>
 
+    <div
+        wire:key="challenges-table-{{ $this->challengesCacheKey }}"
+        x-data="{
+            selected: null,
+            details: @js($this->challengeDetails),
+            roleLabels: @js(['student' => __('Estudiante'), 'teacher' => __('Profesor'), 'guardian' => __('Acudiente')]),
+            statusLabels: @js(['draft' => __('Borrador'), 'published' => __('Publicado'), 'archived' => __('Archivado')]),
+            difficultyLabels: @js(['easy' => __('Fácil'), 'medium' => __('Media'), 'hard' => __('Difícil')]),
+            roleColors: { student: 'text-blue-700 bg-blue-400/20 dark:text-blue-200 dark:bg-blue-400/40', teacher: 'text-purple-700 bg-purple-400/20 dark:text-purple-200 dark:bg-purple-400/40', guardian: 'text-amber-700 bg-amber-400/20 dark:text-amber-200 dark:bg-amber-400/40' },
+            statusColors: { draft: 'text-zinc-700 bg-zinc-400/15 dark:text-zinc-200 dark:bg-zinc-400/40', published: 'text-teal-700 bg-teal-400/20 dark:text-teal-200 dark:bg-teal-400/40', archived: 'text-orange-700 bg-orange-400/20 dark:text-orange-200 dark:bg-orange-400/40' },
+            difficultyColors: { easy: 'text-green-700 bg-green-400/20 dark:text-green-200 dark:bg-green-400/40', medium: 'text-amber-700 bg-amber-400/20 dark:text-amber-200 dark:bg-amber-400/40', hard: 'text-red-700 bg-red-400/20 dark:text-red-200 dark:bg-red-400/40' },
+            show(ulid) { this.selected = this.details[ulid]; $dispatch('modal-show', { name: 'challenge-detail' }); },
+        }"
+    >
     <div class="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <div class="flex flex-wrap items-center gap-3 border-b border-zinc-100 p-4 dark:border-zinc-800">
             <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por código, título o categoría...')" class="min-w-64 grow" />
@@ -77,18 +91,14 @@
                     @forelse ($this->challenges as $challenge)
                         <tr class="transition hover:bg-zinc-50 dark:hover:bg-white/5">
                             <td class="px-4 py-3">
-                                <flux:modal.trigger name="challenge-detail">
-                                    <button type="button" wire:click="view('{{ $challenge->ulid }}')" class="font-mono text-xs font-bold text-teal-deep hover:underline dark:text-teal">
-                                        {{ $challenge->code }}
-                                    </button>
-                                </flux:modal.trigger>
+                                <button type="button" x-on:click="show('{{ $challenge->ulid }}')" class="font-mono text-xs font-bold text-teal-deep hover:underline dark:text-teal">
+                                    {{ $challenge->code }}
+                                </button>
                             </td>
                             <td class="px-4 py-3">
-                                <flux:modal.trigger name="challenge-detail">
-                                    <button type="button" wire:click="view('{{ $challenge->ulid }}')" class="text-left font-medium text-brand-text hover:text-teal-deep hover:underline">
-                                        {{ $challenge->title }}
-                                    </button>
-                                </flux:modal.trigger>
+                                <button type="button" x-on:click="show('{{ $challenge->ulid }}')" class="text-left font-medium text-brand-text hover:text-teal-deep hover:underline">
+                                    {{ $challenge->title }}
+                                </button>
                                 <div class="text-xs text-brand-text-muted!">{{ $challenge->category }}</div>
                             </td>
                             <td class="px-4 py-3">
@@ -139,16 +149,14 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1.5">
-                                    <flux:modal.trigger name="challenge-detail">
-                                        <flux:button size="sm" icon="eye" wire:click="view('{{ $challenge->ulid }}')">
-                                            {{ __('Ver detalle') }}
-                                        </flux:button>
-                                    </flux:modal.trigger>
+                                    <flux:button size="sm" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show('{{ $challenge->ulid }}')" />
 
                                     @can('update-challenge')
-                                        <flux:button size="sm" icon="pencil-square" :href="route('challenges.manage.edit', $challenge->ulid)" wire:navigate>
-                                            {{ __('Editar') }}
-                                        </flux:button>
+                                        <flux:button size="sm" icon="pencil-square" :tooltip="__('Editar')" :href="route('challenges.manage.edit', $challenge->ulid)" wire:navigate />
+
+                                        @if ($challenge->status !== 'archived')
+                                            <flux:button size="sm" icon="archive-box" :tooltip="__('Archivar')" wire:click="archive('{{ $challenge->ulid }}')" wire:confirm="{{ __('¿Archivar este reto?') }}" />
+                                        @endif
                                     @endcan
                                 </div>
                             </td>
@@ -172,106 +180,51 @@
     </div>
 
     <flux:modal name="challenge-detail" class="w-full max-w-2xl">
-        <div wire:loading wire:target="view" class="space-y-6">
-            <flux:skeleton.group animate="pulse" class="space-y-6">
-                <div class="flex items-start justify-between gap-3">
-                    <div class="space-y-2">
-                        <flux:skeleton class="h-5 w-20" />
-                        <flux:skeleton class="h-7 w-56" />
-                        <flux:skeleton class="h-4 w-32" />
-                    </div>
-                    <flux:skeleton class="h-6 w-24" />
-                </div>
-
-                <flux:skeleton class="h-4 w-full" />
-                <flux:skeleton class="h-4 w-4/5" />
-
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    @for ($i = 0; $i < 6; $i++)
-                        <flux:skeleton class="h-10 w-full" />
-                    @endfor
-                </div>
-
-                <div class="space-y-3">
-                    <flux:skeleton class="h-5 w-28" />
-                    <flux:skeleton class="h-20 w-full" />
-                    <flux:skeleton class="h-20 w-full" />
-                </div>
-            </flux:skeleton.group>
-        </div>
-
-        <div wire:loading.remove wire:target="view">
-        @if ($this->viewingChallenge)
-            @php($challenge = $this->viewingChallenge)
-
+        <template x-if="selected">
             <div class="space-y-6">
                 <div class="flex items-start justify-between gap-3">
                     <div>
-                        <flux:badge size="sm" class="mb-2 font-mono">{{ $challenge->code }}</flux:badge>
-                        <flux:heading size="lg">{{ $challenge->title }}</flux:heading>
-                        <flux:text class="text-sm text-brand-text-muted!">{{ $challenge->category }}</flux:text>
+                        <span class="mb-2 inline-block rounded-md bg-zinc-400/15 px-2 py-1 font-mono text-xs font-medium text-zinc-700 dark:bg-zinc-400/40 dark:text-zinc-200" x-text="selected.code"></span>
+                        <flux:heading size="lg" x-text="selected.title"></flux:heading>
+                        <flux:text class="text-sm text-brand-text-muted!" x-text="selected.category"></flux:text>
                     </div>
-                    <flux:badge :color="match ($challenge->status) {
-                        'draft' => 'zinc',
-                        'published' => 'teal',
-                        'archived' => 'orange',
-                    }">
-                        {{ __(match ($challenge->status) {
-                            'draft' => 'Borrador',
-                            'published' => 'Publicado',
-                            'archived' => 'Archivado',
-                        }) }}
-                    </flux:badge>
+                    <span class="rounded-md px-2 py-1 text-xs font-medium" :class="statusColors[selected.status]" x-text="statusLabels[selected.status]"></span>
                 </div>
 
-                <flux:text>{{ $challenge->description }}</flux:text>
+                <flux:text x-text="selected.description"></flux:text>
 
                 <div class="grid grid-cols-2 gap-3 rounded-lg bg-zinc-50 p-4 text-sm sm:grid-cols-3 dark:bg-zinc-800/50">
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Dirigido a') }}</div>
-                        <div class="font-medium text-brand-text">
-                            {{ __(match ($challenge->target_role) {
-                                'student' => 'Estudiante',
-                                'teacher' => 'Profesor',
-                                'guardian' => 'Acudiente',
-                            }) }}
-                        </div>
+                        <div class="font-medium text-brand-text" x-text="roleLabels[selected.target_role]"></div>
                     </div>
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Dificultad') }}</div>
-                        <div class="font-medium text-brand-text">
-                            {{ __(match ($challenge->difficulty) {
-                                'easy' => 'Fácil',
-                                'medium' => 'Media',
-                                'hard' => 'Difícil',
-                            }) }}
-                        </div>
+                        <div class="font-medium text-brand-text" x-text="difficultyLabels[selected.difficulty]"></div>
                     </div>
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Tope de puntos') }}</div>
-                        <div class="font-medium text-brand-text">{{ $challenge->points }}</div>
+                        <div class="font-medium text-brand-text" x-text="selected.points"></div>
                     </div>
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Preguntas') }}</div>
-                        <div class="font-medium text-brand-text">{{ $challenge->questions->count() }}</div>
+                        <div class="font-medium text-brand-text" x-text="selected.questions.length"></div>
                     </div>
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Envíos') }}</div>
-                        <div class="font-medium text-brand-text">{{ $challenge->completions_count }}</div>
+                        <div class="font-medium text-brand-text" x-text="selected.completions_count"></div>
                     </div>
                     <div>
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Verificados') }}</div>
-                        <div class="font-medium text-brand-text">{{ $challenge->verified_completions_count }}</div>
+                        <div class="font-medium text-brand-text" x-text="selected.verified_completions_count"></div>
                     </div>
                     <div class="col-span-2 sm:col-span-3">
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Instituciones') }}</div>
-                        <div class="font-medium text-brand-text">
-                            {{ $challenge->institutions->isEmpty() ? __('Todas las instituciones') : $challenge->institutions->pluck('name')->join(', ') }}
-                        </div>
+                        <div class="font-medium text-brand-text" x-text="selected.institutions.length ? selected.institutions.join(', ') : '{{ __('Todas las instituciones') }}'"></div>
                     </div>
                     <div class="col-span-2 sm:col-span-3">
                         <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Creado por') }}</div>
-                        <div class="font-medium text-brand-text">{{ $challenge->creator?->name ?? __('—') }}</div>
+                        <div class="font-medium text-brand-text" x-text="selected.creator_name || '—'"></div>
                     </div>
                 </div>
 
@@ -279,48 +232,45 @@
                     <flux:heading size="sm" class="mb-3">{{ __('Preguntas') }}</flux:heading>
 
                     <div class="space-y-3">
-                        @forelse ($challenge->questions as $question)
+                        <template x-for="question in selected.questions" :key="question.code">
                             <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                                 <div class="mb-2 flex items-start justify-between gap-2">
                                     <div>
-                                        <flux:badge size="sm" class="mb-1 font-mono">{{ $question->code }}</flux:badge>
-                                        <div class="font-medium text-brand-text">{{ $question->title }}</div>
-                                        @if ($question->description)
-                                            <flux:text class="text-sm text-brand-text-muted!">{{ $question->description }}</flux:text>
-                                        @endif
+                                        <span class="mb-1 inline-block rounded-md bg-zinc-400/15 px-2 py-1 font-mono text-xs font-medium text-zinc-700 dark:bg-zinc-400/40 dark:text-zinc-200" x-text="question.code"></span>
+                                        <div class="font-medium text-brand-text" x-text="question.title"></div>
+                                        <flux:text class="text-sm text-brand-text-muted!" x-show="question.description" x-text="question.description"></flux:text>
                                     </div>
-                                    <flux:badge size="sm" variant="pill">{{ __(':n pts', ['n' => $question->points]) }}</flux:badge>
+                                    <span class="rounded-full bg-zinc-400/15 px-3 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-400/40 dark:text-zinc-200" x-text="question.points + ' {{ __('pts') }}'"></span>
                                 </div>
 
-                                @if ($question->answer_type === 'choice')
-                                    <flux:text class="mb-2 text-xs text-brand-text-muted!">
-                                        {{ $question->answer_mode === 'single' ? __('Opción única') : __('Opción múltiple · mínimo :n correctas', ['n' => $question->min_selections]) }}
-                                        @unless ($question->is_scored) · {{ __('sin puntaje') }} @endunless
-                                    </flux:text>
+                                <template x-if="question.answer_type === 'choice'">
+                                    <div>
+                                        <flux:text class="mb-2 text-xs text-brand-text-muted!">
+                                            <span x-text="question.answer_mode === 'single' ? '{{ __('Opción única') }}' : ('{{ __('Opción múltiple · mínimo') }} ' + question.min_selections + ' {{ __('correctas') }}')"></span>
+                                            <span x-show="!question.is_scored"> · {{ __('sin puntaje') }}</span>
+                                        </flux:text>
 
-                                    <ul class="space-y-1">
-                                        @foreach ($question->options as $option)
-                                            <li class="flex items-center gap-2 text-sm">
-                                                <flux:icon
-                                                    :icon="$option->is_correct ? 'check-circle' : 'x-circle'"
-                                                    variant="micro"
-                                                    class="size-4 shrink-0 {{ $option->is_correct ? 'text-teal-deep' : 'text-zinc-300 dark:text-zinc-600' }}"
-                                                />
-                                                <span class="{{ $option->is_correct ? 'font-medium text-brand-text' : 'text-brand-text-muted' }}">
-                                                    {{ $option->label }}
-                                                </span>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @else
+                                        <ul class="space-y-1">
+                                            <template x-for="option in question.options" :key="option.label">
+                                                <li class="flex items-center gap-2 text-sm">
+                                                    <flux:icon icon="check-circle" variant="micro" class="size-4 shrink-0 text-teal-deep" x-show="option.is_correct" />
+                                                    <flux:icon icon="x-circle" variant="micro" class="size-4 shrink-0 text-zinc-300 dark:text-zinc-600" x-show="!option.is_correct" />
+                                                    <span :class="option.is_correct ? 'font-medium text-brand-text' : 'text-brand-text-muted'" x-text="option.label"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+
+                                <template x-if="question.answer_type !== 'choice'">
                                     <flux:text class="text-xs text-brand-text-muted!">
                                         {{ __('Requiere evidencia adjunta (foto, documento, PDF, etc.) y verificación manual.') }}
                                     </flux:text>
-                                @endif
+                                </template>
                             </div>
-                        @empty
-                            <flux:text class="text-brand-text-muted!">{{ __('Este reto todavía no tiene preguntas.') }}</flux:text>
-                        @endforelse
+                        </template>
+
+                        <flux:text x-show="selected.questions.length === 0" class="text-brand-text-muted!">{{ __('Este reto todavía no tiene preguntas.') }}</flux:text>
                     </div>
                 </div>
 
@@ -330,13 +280,13 @@
                     </flux:modal.close>
 
                     @can('update-challenge')
-                        <flux:button variant="primary" icon="pencil-square" class="bg-teal! hover:bg-teal-deep!" :href="route('challenges.manage.edit', $challenge->ulid)" wire:navigate>
+                        <flux:button variant="primary" icon="pencil-square" class="bg-teal! hover:bg-teal-deep!" href="#" x-bind:href="selected.edit_url" wire:navigate>
                             {{ __('Editar reto') }}
                         </flux:button>
                     @endcan
                 </div>
             </div>
-        @endif
-        </div>
+        </template>
     </flux:modal>
+    </div>
 </section>
