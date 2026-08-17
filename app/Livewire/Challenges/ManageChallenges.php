@@ -284,7 +284,7 @@ class ManageChallenges extends Component
             $this->institutionUuids = [];
         }
 
-        $data = $this->validate($this->rules());
+        $data = $this->validate($this->rules(), $this->messages());
         $this->validateQuestionRules($data['questions'] ?? []);
 
         $data['status'] = $status;
@@ -316,7 +316,7 @@ class ManageChallenges extends Component
             'difficulty' => ['required', Rule::in(['easy', 'medium', 'hard'])],
             'institutionUuids' => ['array', 'max:100'],
             'institutionUuids.*' => ['string', 'exists:institutions,uuid'],
-            'questions' => ['array', 'max:20'],
+            'questions' => ['required', 'array', 'min:1', 'max:20'],
             'questions.*.id' => ['nullable', 'integer'],
             'questions.*.title' => ['required', 'string', 'max:255'],
             'questions.*.description' => ['nullable', 'string', 'max:2000'],
@@ -330,6 +330,14 @@ class ManageChallenges extends Component
             'questions.*.options.*.id' => ['nullable', 'integer'],
             'questions.*.options.*.label' => ['required', 'string', 'max:255'],
             'questions.*.options.*.is_correct' => ['boolean'],
+        ];
+    }
+
+    protected function messages(): array
+    {
+        return [
+            'questions.required' => __('Agrega al menos una pregunta al reto.'),
+            'questions.min' => __('Agrega al menos una pregunta al reto.'),
         ];
     }
 

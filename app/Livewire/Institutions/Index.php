@@ -12,11 +12,14 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 #[Title('Instituciones')]
 class Index extends Component
 {
-    use InstitutionValidationRules;
+    use InstitutionValidationRules, WithPagination;
+
+    public string $search = '';
 
     public ?string $editingUuid = null;
 
@@ -73,17 +76,82 @@ class Index extends Component
         $this->authorize('viewAny', Institution::class);
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Keyset (cursor) pagination stays fast no matter how many institutions exist.
+     */
     #[Computed]
     public function institutions()
     {
+        $search = trim($this->search);
+
         return Institution::withCount(['branches', 'groups'])
             ->with('admin')
             ->withCount([
                 'memberships as active_student_count' => fn ($query) => $query->where('status', 'active')->whereHas('user', fn ($u) => $u->role('student')),
                 'memberships as active_teacher_count' => fn ($query) => $query->where('status', 'active')->whereHas('user', fn ($u) => $u->role('teacher')),
             ])
-            ->orderBy('name')
-            ->get();
+            ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
+                // ILIKE (case-insensitive) is accelerated by the pg_trgm GIN indexes on these columns.
+                $q->where('name', 'ilike', "%{$search}%")->orWhere('nit', 'ilike', "%{$search}%");
+            }))
+            ->orderByDesc('id')
+            ->cursorPaginate(10);
+    }
+
+    /**
+     * A key that changes whenever the current page's set of institutions changes, used to force
+     * Alpine to reinitialize with fresh `institutionDetails` instead of keeping stale client state.
+     */
+    #[Computed]
+    public function institutionsCacheKey(): string
+    {
+        return md5($this->institutions->pluck('uuid')->implode(','));
+    }
+
+    /**
+     * Full detail for every institution on the current page, embedded once so the popup opens
+     * instantly client-side with zero extra requests.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    #[Computed]
+    public function institutionDetails(): array
+    {
+        return $this->institutions->getCollection()->mapWithKeys(fn (Institution $institution) => [
+            $institution->uuid => [
+                'name' => $institution->name,
+                'nit' => $institution->nit,
+                'address' => $institution->address,
+                'phone' => $institution->phone,
+                'bulletin_frequency' => $institution->bulletin_frequency,
+                'entity_type' => $institution->entity_type,
+                'country' => $institution->country,
+                'state' => $institution->state,
+                'city' => $institution->city,
+                'contact_name' => trim(collect([
+                    $institution->contact_first_name,
+                    $institution->contact_middle_name,
+                    $institution->contact_last_name,
+                    $institution->contact_second_last_name,
+                ])->filter()->implode(' ')),
+                'contact_document' => trim(collect([$institution->contact_document_type, $institution->contact_document_number])->filter()->implode(' ')),
+                'contact_email' => $institution->contact_email,
+                'contact_phone' => $institution->contact_phone,
+                'principal_name' => $institution->principal_name,
+                'principal_document' => trim(collect([$institution->principal_document_type, $institution->principal_document_number])->filter()->implode(' ')),
+                'principal_started_at' => $institution->principal_started_at?->format('d/m/Y'),
+                'admin_name' => $institution->admin?->name,
+                'admin_email' => $institution->admin?->email,
+                'active_student_count' => $institution->active_student_count,
+                'active_teacher_count' => $institution->active_teacher_count,
+                'groups_count' => $institution->groups_count,
+            ],
+        ])->all();
     }
 
     public function edit(string $uuid): void
@@ -148,7 +216,7 @@ class Index extends Component
             'city',
             'entity_type',
         ]);
-        unset($this->institutions);
+        unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
         Flux::toast(variant: 'success', text: __('Institución actualizada.'));
     }
@@ -159,7 +227,7 @@ class Index extends Component
         $this->authorize('delete', $institution);
 
         $institution->delete();
-        unset($this->institutions);
+        unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
         Flux::toast(variant: 'success', text: __('Institución eliminada.'));
     }
@@ -194,7 +262,7 @@ class Index extends Component
         $admin->notify(new InstitutionAdminAccountCreated);
 
         $this->reset(['assigningUuid', 'admin_name', 'admin_email']);
-        unset($this->institutions);
+        unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
         Flux::toast(variant: 'success', text: __('Admin asignado a la institución.'));
     }

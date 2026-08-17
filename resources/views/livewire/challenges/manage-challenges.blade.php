@@ -210,6 +210,14 @@
                         </div>
                     </div>
                 @endforeach
+
+                @if (empty($questions))
+                    <div class="rounded-lg border border-dashed border-zinc-300 p-6 text-center dark:border-zinc-700">
+                        <flux:text class="text-brand-text-muted!">
+                            {{ __('Aún no has agregado preguntas. El reto necesita al menos una para poder guardarse.') }}
+                        </flux:text>
+                    </div>
+                @endif
             </div>
 
             <flux:button class="mt-5" icon="plus" wire:click="addQuestion" type="button">
