@@ -4,9 +4,11 @@ use App\Http\Controllers\HomeController;
 use App\Livewire\Actors\EnrollActor;
 use App\Livewire\Actors\Roster;
 use App\Livewire\Challenges\Catalog;
+use App\Livewire\Challenges\Index as ChallengesIndex;
 use App\Livewire\Challenges\ManageChallenges;
 use App\Livewire\Challenges\Statistics;
 use App\Livewire\Challenges\VerificationQueue;
+use App\Livewire\Institutions\Create as InstitutionsCreate;
 use App\Livewire\Institutions\Index as InstitutionsIndex;
 use App\Livewire\Institutions\Show as InstitutionsShow;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:view-institutions')
         ->name('institutions.index');
 
+    Route::livewire('institutions/create', InstitutionsCreate::class)
+        ->middleware('permission:create-institution')
+        ->name('institutions.create');
+
     Route::livewire('institutions/{institution}', InstitutionsShow::class)
         ->middleware('permission:view-institutions')
         ->name('institutions.show');
@@ -38,9 +44,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:student|teacher|guardian')
         ->name('challenges.catalog');
 
-    Route::livewire('challenges/manage', ManageChallenges::class)
+    Route::livewire('challenges/manage', ChallengesIndex::class)
         ->middleware('permission:create-challenge|update-challenge')
         ->name('challenges.manage');
+
+    Route::livewire('challenges/manage/create', ManageChallenges::class)
+        ->middleware('permission:create-challenge')
+        ->name('challenges.manage.create');
+
+    Route::livewire('challenges/manage/{challenge}/edit', ManageChallenges::class)
+        ->middleware('permission:update-challenge')
+        ->name('challenges.manage.edit');
 
     Route::livewire('challenges/verify', VerificationQueue::class)
         ->middleware('role:teacher')

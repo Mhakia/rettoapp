@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Institutions;
 
+use App\Concerns\InstitutionValidationRules;
 use App\Models\Institution;
 use App\Models\User;
+use App\Notifications\InstitutionAdminAccountCreated;
 use Flux\Flux;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -15,6 +16,8 @@ use Livewire\Component;
 #[Title('Instituciones')]
 class Index extends Component
 {
+    use InstitutionValidationRules;
+
     public ?string $editingUuid = null;
 
     public string $name = '';
@@ -26,6 +29,38 @@ class Index extends Component
     public string $phone = '';
 
     public string $bulletin_frequency = 'disabled';
+
+    public string $contact_first_name = '';
+
+    public string $contact_middle_name = '';
+
+    public string $contact_last_name = '';
+
+    public string $contact_second_last_name = '';
+
+    public string $contact_document_type = '';
+
+    public string $contact_document_number = '';
+
+    public string $contact_email = '';
+
+    public string $contact_phone = '';
+
+    public string $principal_name = '';
+
+    public string $principal_document_type = '';
+
+    public string $principal_document_number = '';
+
+    public ?string $principal_started_at = null;
+
+    public string $country = '';
+
+    public string $state = '';
+
+    public string $city = '';
+
+    public string $entity_type = '';
 
     public ?string $assigningUuid = null;
 
@@ -62,6 +97,22 @@ class Index extends Component
         $this->address = (string) $institution->address;
         $this->phone = (string) $institution->phone;
         $this->bulletin_frequency = $institution->bulletin_frequency;
+        $this->contact_first_name = (string) $institution->contact_first_name;
+        $this->contact_middle_name = (string) $institution->contact_middle_name;
+        $this->contact_last_name = (string) $institution->contact_last_name;
+        $this->contact_second_last_name = (string) $institution->contact_second_last_name;
+        $this->contact_document_type = (string) $institution->contact_document_type;
+        $this->contact_document_number = (string) $institution->contact_document_number;
+        $this->contact_email = (string) $institution->contact_email;
+        $this->contact_phone = (string) $institution->contact_phone;
+        $this->principal_name = (string) $institution->principal_name;
+        $this->principal_document_type = (string) $institution->principal_document_type;
+        $this->principal_document_number = (string) $institution->principal_document_number;
+        $this->principal_started_at = $institution->principal_started_at?->toDateString();
+        $this->country = (string) $institution->country;
+        $this->state = (string) $institution->state;
+        $this->city = (string) $institution->city;
+        $this->entity_type = (string) $institution->entity_type;
     }
 
     public function save(): void
@@ -69,17 +120,34 @@ class Index extends Component
         $institution = Institution::where('uuid', $this->editingUuid)->firstOrFail();
         $this->authorize('update', $institution);
 
-        $data = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'nit' => ['nullable', 'string', 'max:255', Rule::unique('institutions', 'nit')->ignore($institution->id)],
-            'address' => ['nullable', 'string', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:255'],
-            'bulletin_frequency' => ['required', Rule::in(['weekly', 'biweekly', 'monthly', 'disabled'])],
-        ]);
+        $data = $this->validate($this->institutionRules($institution->id));
 
         $institution->update($data);
 
-        $this->reset(['editingUuid', 'name', 'nit', 'address', 'phone', 'bulletin_frequency']);
+        $this->reset([
+            'editingUuid',
+            'name',
+            'nit',
+            'address',
+            'phone',
+            'bulletin_frequency',
+            'contact_first_name',
+            'contact_middle_name',
+            'contact_last_name',
+            'contact_second_last_name',
+            'contact_document_type',
+            'contact_document_number',
+            'contact_email',
+            'contact_phone',
+            'principal_name',
+            'principal_document_type',
+            'principal_document_number',
+            'principal_started_at',
+            'country',
+            'state',
+            'city',
+            'entity_type',
+        ]);
         unset($this->institutions);
 
         Flux::toast(variant: 'success', text: __('Institución actualizada.'));
@@ -123,6 +191,7 @@ class Index extends Component
             'password' => Hash::make(Str::random(32)),
         ]);
         $admin->assignRole('institution_admin');
+        $admin->notify(new InstitutionAdminAccountCreated);
 
         $this->reset(['assigningUuid', 'admin_name', 'admin_email']);
         unset($this->institutions);

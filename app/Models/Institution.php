@@ -15,6 +15,13 @@ class Institution extends Model
     use Billable, HasFactory, HasUuids;
 
     /**
+     * Document types accepted for the institution's contact and principal.
+     *
+     * @var array<int, string>
+     */
+    public const DOCUMENT_TYPES = ['cedula_ciudadania', 'cedula_extranjeria', 'pasaporte'];
+
+    /**
      * Only the uuid column is generated; id stays the auto-incrementing primary key.
      *
      * @return array<int, string>
@@ -38,7 +45,30 @@ class Institution extends Model
         'address',
         'phone',
         'bulletin_frequency',
+        'contact_first_name',
+        'contact_middle_name',
+        'contact_last_name',
+        'contact_second_last_name',
+        'contact_document_type',
+        'contact_document_number',
+        'contact_email',
+        'contact_phone',
+        'principal_name',
+        'principal_document_type',
+        'principal_document_number',
+        'principal_started_at',
+        'country',
+        'state',
+        'city',
+        'entity_type',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'principal_started_at' => 'date',
+        ];
+    }
 
     public function branches(): HasMany
     {

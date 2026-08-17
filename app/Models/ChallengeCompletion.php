@@ -6,6 +6,7 @@ use App\Events\ChallengeCompletionVerified;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChallengeCompletion extends Model
 {
@@ -58,5 +59,41 @@ class ChallengeCompletion extends Model
     public function verifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    public function questionAnswers(): HasMany
+    {
+        return $this->hasMany(ChallengeQuestionAnswer::class);
+    }
+
+    /**
+     * Recompute this completion's overall status/points from its per-question answers:
+     * rejected if any question was rejected, pending until every question has an answer,
+     * submitted while a choice (manual) or evidence answer is still awaiting review,
+     * verified (summing points) once every question is verified.
+     */
+    public function recalculateStatus(): void
+    {
+        $totalQuestions = $this->challenge->questions()->count();
+
+        if ($totalQuestions === 0) {
+            return;
+        }
+
+        $answers = $this->questionAnswers()->get();
+
+        $status = match (true) {
+            $answers->contains('status', 'rejected') => 'rejected',
+            $answers->count() < $totalQuestions => 'pending',
+            $answers->contains(fn (ChallengeQuestionAnswer $answer) => $answer->status !== 'verified') => 'submitted',
+            default => 'verified',
+        };
+
+        $this->update([
+            'status' => $status,
+            'points_earned' => $status === 'verified' ? $answers->sum('points_earned') : null,
+            'submitted_at' => $this->submitted_at ?? now(),
+            'verified_at' => $status === 'verified' ? now() : null,
+        ]);
     }
 }

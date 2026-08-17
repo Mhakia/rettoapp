@@ -6,7 +6,7 @@
         </div>
 
         @can('create', \App\Models\Institution::class)
-            <flux:button variant="primary" icon="plus" class="bg-teal! hover:bg-teal-deep!">{{ __('Crear institución') }}</flux:button>
+            <flux:button variant="primary" icon="plus" class="bg-teal! hover:bg-teal-deep!" href="{{ route('institutions.create') }}" wire:navigate>{{ __('Crear institución') }}</flux:button>
         @endcan
     </div>
 
@@ -14,22 +14,8 @@
         <div class="mb-6 space-y-4 rounded-xl border border-teal-border bg-white p-6 shadow-sm dark:bg-zinc-900">
             <flux:heading size="sm" class="text-teal-deep!">{{ __('Editar institución') }}</flux:heading>
 
-            <form wire:submit="save" class="space-y-4">
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <flux:input wire:model="name" :label="__('Nombre')" />
-                    <flux:input wire:model="nit" :label="__('NIT')" />
-                </div>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <flux:input wire:model="address" :label="__('Dirección')" />
-                    <flux:input wire:model="phone" :label="__('Teléfono')" />
-                </div>
-
-                <flux:select wire:model="bulletin_frequency" :label="__('Frecuencia de boletines')">
-                    <flux:select.option value="weekly">{{ __('Semanal') }}</flux:select.option>
-                    <flux:select.option value="biweekly">{{ __('Quincenal') }}</flux:select.option>
-                    <flux:select.option value="monthly">{{ __('Mensual') }}</flux:select.option>
-                    <flux:select.option value="disabled">{{ __('Deshabilitado') }}</flux:select.option>
-                </flux:select>
+            <form wire:submit="save" class="space-y-6">
+                @include('livewire.institutions._form-fields')
 
                 <div class="flex gap-2">
                     <flux:button variant="primary" type="submit" class="bg-teal! hover:bg-teal-deep!">{{ __('Guardar') }}</flux:button>
@@ -119,7 +105,7 @@
                     @endcan
 
                     @can('create', \App\Models\Challenge::class)
-                        <flux:button size="sm" icon="sparkles" class="text-amber! hover:bg-amber-bg!" href="{{ route('challenges.manage', ['institution' => $institution->uuid]) }}" wire:navigate>
+                        <flux:button size="sm" icon="sparkles" class="text-amber! hover:bg-amber-bg!" href="{{ route('challenges.manage.create', ['institution' => $institution->uuid]) }}" wire:navigate>
                             {{ __('Crear reto') }}
                         </flux:button>
                     @endcan

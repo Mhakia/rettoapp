@@ -22,6 +22,34 @@
                         </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
+
+                @canany(['complete-challenge', 'create-challenge', 'update-challenge', 'verify-challenge', 'view-challenge-statistics'])
+                    <flux:sidebar.group :heading="__('Retos')" class="grid">
+                        @can('complete-challenge')
+                            <flux:sidebar.item icon="sparkles" :href="route('challenges.catalog')" :current="request()->routeIs('challenges.catalog')" wire:navigate>
+                                {{ __('Retos') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @canany(['create-challenge', 'update-challenge'])
+                            <flux:sidebar.item icon="clipboard-document-list" :href="route('challenges.manage')" :current="request()->routeIs('challenges.manage*')" wire:navigate>
+                                {{ __('Gestionar retos') }}
+                            </flux:sidebar.item>
+                        @endcanany
+
+                        @can('verify-challenge')
+                            <flux:sidebar.item icon="check-badge" :href="route('challenges.verify')" :current="request()->routeIs('challenges.verify')" wire:navigate>
+                                {{ __('Verificar retos') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @can('view-challenge-statistics')
+                            <flux:sidebar.item icon="chart-bar" :href="route('challenges.statistics')" :current="request()->routeIs('challenges.statistics')" wire:navigate>
+                                {{ __('Estadísticas de retos') }}
+                            </flux:sidebar.item>
+                        @endcan
+                    </flux:sidebar.group>
+                @endcanany
             </flux:sidebar.nav>
 
             <flux:spacer />

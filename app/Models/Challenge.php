@@ -15,6 +15,13 @@ class Challenge extends Model
     use HasFactory, HasUlids;
 
     /**
+     * Default points cap when a challenge is created without specifying one.
+     */
+    protected $attributes = [
+        'points' => 100,
+    ];
+
+    /**
      * Only the ulid column is generated; id stays the auto-incrementing primary key.
      *
      * @return array<int, string>
@@ -30,6 +37,14 @@ class Challenge extends Model
     public function getRouteKeyName(): string
     {
         return 'ulid';
+    }
+
+    /**
+     * Short reference code shown to users, e.g. "R-0007" (questions use the "P-" prefix instead).
+     */
+    public function getCodeAttribute(): string
+    {
+        return sprintf('R-%04d', $this->id);
     }
 
     protected $fillable = [
@@ -66,6 +81,23 @@ class Challenge extends Model
     public function completions(): HasMany
     {
         return $this->hasMany(ChallengeCompletion::class);
+    }
+
+    public function questions(): HasMany
+    {
+        return $this->hasMany(ChallengeQuestion::class);
+    }
+
+    /**
+     * Points still available for new/edited questions before exceeding this challenge's cap.
+     */
+    public function remainingPoints(?int $excludingQuestionId = null): int
+    {
+        $used = $this->questions()
+            ->when($excludingQuestionId, fn ($query) => $query->where('id', '!=', $excludingQuestionId))
+            ->sum('points');
+
+        return max(0, $this->points - $used);
     }
 
     /**
