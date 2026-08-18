@@ -61,7 +61,7 @@ class ImportTeachers extends Component
 
         $this->backUrl = Auth::user()->hasRole('institution_admin')
             ? route('actors.teachers.index')
-            : route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'teacher']);
+            : route('directory.teachers', ['institution' => $institution->uuid]);
     }
 
     public function downloadTemplate()

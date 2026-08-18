@@ -100,14 +100,14 @@
                 <div class="flex flex-wrap gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                     <flux:button size="sm" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show('{{ $institution->uuid }}')" />
 
-                    <flux:button size="sm" icon="academic-cap" href="{{ route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'student']) }}" wire:navigate>
+                    <flux:button size="sm" icon="academic-cap" href="{{ route('directory.students', ['institution' => $institution->uuid]) }}" wire:navigate>
                         {{ __('Estudiantes') }}
                     </flux:button>
-                    <flux:button size="sm" icon="user-group" href="{{ route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'teacher']) }}" wire:navigate>
+                    <flux:button size="sm" icon="user-group" href="{{ route('directory.teachers', ['institution' => $institution->uuid]) }}" wire:navigate>
                         {{ __('Profesores') }}
                     </flux:button>
-                    <flux:button size="sm" icon="squares-2x2" href="{{ route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'group']) }}" wire:navigate>
-                        {{ __('Grupos') }}
+                    <flux:button size="sm" icon="heart" href="{{ route('directory.guardians', ['institution' => $institution->uuid]) }}" wire:navigate>
+                        {{ __('Acudientes') }}
                     </flux:button>
 
                     @can('update', $institution)

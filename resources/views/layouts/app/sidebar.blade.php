@@ -24,20 +24,20 @@
                 </flux:sidebar.group>
 
                 @role('institution_admin')
-                    <flux:sidebar.group :heading="__('Mi institución')" class="grid">
-                        <flux:sidebar.item icon="academic-cap" :href="route('actors.students.index')" :current="request()->routeIs('actors.students.*')" wire:navigate>
-                            {{ __('Estudiantes') }}
-                        </flux:sidebar.item>
-
-                        <flux:sidebar.item icon="user-group" :href="route('actors.teachers.index')" :current="request()->routeIs('actors.teachers.*')" wire:navigate>
-                            {{ __('Profesores') }}
-                        </flux:sidebar.item>
-
-                        <flux:sidebar.item icon="heart" :href="route('actors.guardians.index')" :current="request()->routeIs('actors.guardians.*')" wire:navigate>
-                            {{ __('Acudientes') }}
-                        </flux:sidebar.item>
-                    </flux:sidebar.group>
+                    <x-sidebar-nav-group :heading="__('Mi institución')" :items="[
+                        ['icon' => 'academic-cap', 'route' => 'actors.students.index', 'current' => 'actors.students.*', 'label' => __('Estudiantes')],
+                        ['icon' => 'user-group', 'route' => 'actors.teachers.index', 'current' => 'actors.teachers.*', 'label' => __('Profesores')],
+                        ['icon' => 'heart', 'route' => 'actors.guardians.index', 'current' => 'actors.guardians.*', 'label' => __('Acudientes')],
+                    ]" />
                 @endrole
+
+                @can('view-institution-members')
+                    <x-sidebar-nav-group :heading="__('Directorio')" :items="[
+                        ['icon' => 'academic-cap', 'route' => 'directory.students', 'current' => 'directory.students', 'label' => __('Estudiantes')],
+                        ['icon' => 'user-group', 'route' => 'directory.teachers', 'current' => 'directory.teachers', 'label' => __('Profesores')],
+                        ['icon' => 'heart', 'route' => 'directory.guardians', 'current' => 'directory.guardians', 'label' => __('Acudientes')],
+                    ]" />
+                @endcan
 
                 @canany(['complete-challenge', 'create-challenge', 'update-challenge', 'verify-challenge', 'view-challenge-statistics'])
                     <flux:sidebar.group :heading="__('Retos')" class="grid">

@@ -60,7 +60,7 @@ class ImportStudents extends Component
 
         $this->backUrl = Auth::user()->hasRole('institution_admin')
             ? route('actors.students.index')
-            : route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'student']);
+            : route('directory.students', ['institution' => $institution->uuid]);
     }
 
     public function downloadTemplate()

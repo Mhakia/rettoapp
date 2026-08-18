@@ -7,6 +7,9 @@ use App\Livewire\Actors\CreateTeacher;
 use App\Livewire\Actors\GuardiansRoster;
 use App\Livewire\Actors\ImportStudents;
 use App\Livewire\Actors\ImportTeachers;
+use App\Livewire\Actors\StaffGuardiansRoster;
+use App\Livewire\Actors\StaffStudentsRoster;
+use App\Livewire\Actors\StaffTeachersRoster;
 use App\Livewire\Actors\StudentsRoster;
 use App\Livewire\Actors\TeachersRoster;
 use App\Livewire\Challenges\Catalog;
@@ -58,6 +61,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('actors/students/import', ImportStudents::class)
         ->name('actors.students.import');
+
+    Route::livewire('directory/students', StaffStudentsRoster::class)
+        ->middleware('permission:view-institution-members')
+        ->name('directory.students');
+
+    Route::livewire('directory/teachers', StaffTeachersRoster::class)
+        ->middleware('permission:view-institution-members')
+        ->name('directory.teachers');
+
+    Route::livewire('directory/guardians', StaffGuardiansRoster::class)
+        ->middleware('permission:view-institution-members')
+        ->name('directory.guardians');
 
     Route::livewire('institutions', InstitutionsIndex::class)
         ->middleware('permission:view-institutions')
