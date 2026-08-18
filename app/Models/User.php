@@ -19,7 +19,7 @@ use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'first_name', 'last_name', 'email', 'password', 'institution_id', 'document_type', 'document_number', 'phone'])]
+#[Fillable(['name', 'first_name', 'last_name', 'email', 'password', 'institution_id', 'document_type', 'document_number', 'phone', 'birth_date', 'address'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
 {
@@ -53,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birth_date' => 'date',
         ];
     }
 

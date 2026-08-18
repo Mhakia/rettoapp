@@ -106,6 +106,8 @@ class Roster extends Component
     }
 
     #[On('membership-withdrawn')]
+    #[On('membership-groups-updated')]
+    #[On('member-reenrolled')]
     public function refreshMemberships(): void
     {
         unset($this->memberships, $this->membershipsCacheKey, $this->membershipDetails);

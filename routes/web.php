@@ -1,9 +1,9 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Livewire\Actors\CreateGuardian;
 use App\Livewire\Actors\CreateStudent;
 use App\Livewire\Actors\CreateTeacher;
-use App\Livewire\Actors\EnrollActor;
 use App\Livewire\Actors\ImportStudents;
 use App\Livewire\Actors\ImportTeachers;
 use App\Livewire\Actors\Roster;
@@ -24,10 +24,6 @@ Route::get('/', HomeController::class)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
-    Route::livewire('actors/enroll', EnrollActor::class)
-        ->middleware('role:institution_admin')
-        ->name('actors.enroll');
-
     Route::livewire('actors/roster', Roster::class)
         ->middleware('role:institution_admin')
         ->name('actors.roster');
@@ -37,6 +33,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('actors/students/create', CreateStudent::class)
         ->name('actors.students.create');
+
+    Route::livewire('actors/guardians/create', CreateGuardian::class)
+        ->name('actors.guardians.create');
 
     Route::livewire('actors/teachers/import', ImportTeachers::class)
         ->name('actors.teachers.import');

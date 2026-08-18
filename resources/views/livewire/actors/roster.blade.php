@@ -13,7 +13,7 @@
                     <flux:menu.item icon="arrow-up-tray" href="{{ route('actors.students.import') }}" wire:navigate>{{ __('Cargar estudiantes') }}</flux:menu.item>
                     <flux:menu.item icon="arrow-up-tray" href="{{ route('actors.teachers.import') }}" wire:navigate>{{ __('Cargar profesores') }}</flux:menu.item>
                     <flux:menu.separator />
-                    <flux:menu.item icon="link" href="{{ route('actors.enroll') }}" wire:navigate>{{ __('Matricular / vincular') }}</flux:menu.item>
+                    <flux:menu.item icon="heart" href="{{ route('actors.guardians.create') }}" wire:navigate>{{ __('Nuevo acudiente') }}</flux:menu.item>
                 </flux:menu>
             </flux:dropdown>
         </div>
@@ -25,7 +25,10 @@
             <flux:radio value="teacher" icon="user-group" :label="__('Profesores')" />
         </flux:radio.group>
 
-        <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="sm:max-w-xs" />
+        <div class="flex flex-wrap items-center gap-2">
+            <livewire:actors.reenroll-member :role="$role" :key="'reenroll-'.$role" />
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="sm:max-w-xs" />
+        </div>
     </div>
 
     <div
@@ -84,6 +87,7 @@
                     </span>
                     <div class="ml-1 flex items-center gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-700">
                         <flux:button size="sm" variant="ghost" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show({{ $membership->id }})" />
+                        <livewire:actors.manage-membership-groups :membership="$membership" :key="'groups-'.$membership->id" />
                         <livewire:actors.withdraw-membership :membership="$membership" :key="$membership->id" />
                     </div>
                 </div>
