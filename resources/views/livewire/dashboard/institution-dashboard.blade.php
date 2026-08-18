@@ -21,11 +21,19 @@
 
     $trend = $this->enrollmentTrend;
     $maxTrend = max(1, collect($trend)->max('count'));
+    $totalNewEnrollments = array_sum(array_column($trend, 'count'));
     $trendPoints = collect($trend)->values()->map(function ($point, $i) use ($trend, $maxTrend) {
         $x = count($trend) > 1 ? ($i / (count($trend) - 1)) * 300 : 150;
         $y = 90 - (($point['count'] / $maxTrend) * 80);
 
-        return ['x' => round($x, 1), 'y' => round($y, 1)];
+        return [
+            'x' => round($x, 1),
+            'y' => round($y, 1),
+            // Percent-based coordinates for the HTML/CSS dots and tooltips, so they stay
+            // perfectly round regardless of how the SVG's non-uniform viewBox gets stretched.
+            'xp' => round($x / 300 * 100, 2),
+            'yp' => round($y / 100 * 100, 2),
+        ];
     });
     $trendPath = $trendPoints->map(fn ($p, $i) => ($i === 0 ? 'M' : 'L').$p['x'].','.$p['y'])->implode(' ');
     $trendAreaPath = $trendPath.' L300,90 L0,90 Z';
@@ -45,15 +53,15 @@
         class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-teal-border bg-teal-bg px-6 py-5 opacity-0 duration-500 ease-out"
         x-init="setTimeout(() => $el.classList.replace('opacity-0', 'opacity-100'), 30)"
     >
-        <div>
-            <flux:heading size="xl" class="text-teal-deep!">{{ $this->institution->name }}</flux:heading>
-            <flux:text class="text-brand-text-muted!">{{ __('Resumen general de tu institución.') }}</flux:text>
+        <div class="flex items-center gap-4">
+            <span class="hidden size-12 shrink-0 items-center justify-center rounded-xl bg-white/70 text-teal-deep shadow-sm sm:flex dark:bg-white/10">
+                <flux:icon icon="building-office" variant="micro" class="size-6" />
+            </span>
+            <div>
+                <flux:heading size="xl" class="text-teal-deep!">{{ $this->institution->name }}</flux:heading>
+                <flux:text class="text-brand-text-muted!">{{ __('Resumen general de tu institución.') }}</flux:text>
+            </div>
         </div>
-        {{-- <div class="flex flex-wrap items-center gap-2">
-            <flux:button icon="academic-cap" href="{{ route('actors.students.index') }}" wire:navigate>{{ __('Estudiantes') }}</flux:button>
-            <flux:button icon="user-group" href="{{ route('actors.teachers.index') }}" wire:navigate>{{ __('Profesores') }}</flux:button>
-            <flux:button icon="heart" href="{{ route('actors.guardians.index') }}" wire:navigate>{{ __('Acudientes') }}</flux:button>
-        </div> --}}
     </div>
 
     {{-- KPI cards --}}
@@ -65,7 +73,7 @@
             ['icon' => 'exclamation-triangle', 'label' => __('Alertas abiertas'), 'value' => $this->stats['open_alerts'], 'color' => 'red'],
         ] as $index => $card)
             <div
-                class="translate-y-2 rounded-xl border border-zinc-200 bg-white p-5 opacity-0 shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
+                class="relative translate-y-2 overflow-hidden rounded-xl border border-zinc-200 bg-white p-5 opacity-0 shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900"
                 x-data="{ value: 0 }"
                 x-init="
                     setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), {{ 60 + $index * 80 }});
@@ -79,7 +87,13 @@
                     requestAnimationFrame(step);
                 "
             >
-                <div class="flex items-center gap-3">
+                <span @class([
+                    'absolute inset-y-0 left-0 w-1',
+                    'bg-teal' => $card['color'] === 'teal',
+                    'bg-amber' => $card['color'] === 'amber',
+                    'bg-red-500' => $card['color'] === 'red',
+                ])></span>
+                <div class="flex items-center gap-3 ps-1.5">
                     <span @class([
                         'flex size-11 shrink-0 items-center justify-center rounded-lg',
                         'bg-teal-bg text-teal-deep' => $card['color'] === 'teal',
@@ -99,7 +113,11 @@
 
     <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-5">
         {{-- Challenge completions donut --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-zinc-700 dark:bg-zinc-900">
+        <div
+            class="translate-y-2 rounded-xl border border-zinc-200 bg-white p-6 opacity-0 shadow-sm transition-all duration-700 ease-out lg:col-span-2 dark:border-zinc-700 dark:bg-zinc-900"
+            x-data
+            x-init="setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), 120)"
+        >
             <flux:heading size="lg" class="mb-1">{{ __('Retos completados') }}</flux:heading>
             <flux:text class="mb-4 text-sm text-brand-text-muted!">{{ __('Estado de las evidencias enviadas por tus estudiantes.') }}</flux:text>
 
@@ -148,7 +166,11 @@
         </div>
 
         {{-- Groups bar chart --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm lg:col-span-3 dark:border-zinc-700 dark:bg-zinc-900">
+        <div
+            class="translate-y-2 rounded-xl border border-zinc-200 bg-white p-6 opacity-0 shadow-sm transition-all duration-700 ease-out lg:col-span-3 dark:border-zinc-700 dark:bg-zinc-900"
+            x-data
+            x-init="setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), 180)"
+        >
             <flux:heading size="lg" class="mb-1">{{ __('Estudiantes por grupo') }}</flux:heading>
             <flux:text class="mb-4 text-sm text-brand-text-muted!">{{ __('Los grupos con más estudiantes activos.') }}</flux:text>
 
@@ -176,19 +198,44 @@
     </div>
 
     {{-- Enrollment trend --}}
-    <div class="mb-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <flux:heading size="lg" class="mb-1">{{ __('Nuevas matrículas') }}</flux:heading>
-        <flux:text class="mb-4 text-sm text-brand-text-muted!">{{ __('Estudiantes y profesores matriculados en los últimos 6 meses.') }}</flux:text>
+    <div
+        class="mb-6 translate-y-2 rounded-xl border border-zinc-200 bg-white p-6 opacity-0 shadow-sm transition-all duration-700 ease-out dark:border-zinc-700 dark:bg-zinc-900"
+        x-data
+        x-init="setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), 240)"
+    >
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <flux:heading size="lg" class="mb-1">{{ __('Nuevas matrículas') }}</flux:heading>
+                <flux:text class="text-sm text-brand-text-muted!">{{ __('Estudiantes y profesores matriculados en los últimos 6 meses.') }}</flux:text>
+            </div>
+            <span class="flex items-center gap-2 rounded-full bg-teal-bg px-3 py-1.5">
+                <span class="size-2 rounded-full bg-teal-deep"></span>
+                <span class="text-xs font-bold text-teal-deep uppercase">{{ __(':count en total', ['count' => $totalNewEnrollments]) }}</span>
+            </span>
+        </div>
 
-        <div class="relative">
-            <svg viewBox="0 0 300 100" class="h-32 w-full overflow-visible" preserveAspectRatio="none">
+        <div class="relative h-48 w-full sm:h-56" x-data="{ shown: false }" x-init="setTimeout(() => shown = true, 320)">
+            {{-- Faint horizontal guide lines --}}
+            <div class="pointer-events-none absolute inset-0 flex flex-col justify-between">
+                @for ($i = 0; $i < 4; $i++)
+                    <div class="border-t border-dashed border-zinc-100 dark:border-zinc-800"></div>
+                @endfor
+            </div>
+
+            <svg viewBox="0 0 300 100" class="absolute inset-0 h-full w-full overflow-visible" preserveAspectRatio="none">
                 <defs>
                     <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stop-color="var(--color-teal)" stop-opacity="0.35" />
                         <stop offset="100%" stop-color="var(--color-teal)" stop-opacity="0" />
                     </linearGradient>
                 </defs>
-                <path d="{{ $trendAreaPath }}" fill="url(#trendGradient)" stroke="none" />
+                <path
+                    d="{{ $trendAreaPath }}"
+                    fill="url(#trendGradient)"
+                    stroke="none"
+                    class="transition-opacity duration-700 ease-out"
+                    :class="shown ? 'opacity-100' : 'opacity-0'"
+                />
                 <path
                     d="{{ $trendPath }}"
                     fill="none"
@@ -196,32 +243,43 @@
                     stroke-width="2.5"
                     stroke-linecap="round"
                     stroke-linejoin="round"
-                    x-data
-                    x-init="
-                        let len = $el.getTotalLength();
-                        $el.style.strokeDasharray = len;
-                        $el.style.strokeDashoffset = len;
-                        requestAnimationFrame(() => {
-                            $el.style.transition = 'stroke-dashoffset 1.2s ease-out';
-                            $el.style.strokeDashoffset = 0;
-                        });
-                    "
+                    vector-effect="non-scaling-stroke"
+                    class="transition-opacity duration-700 ease-out"
+                    :class="shown ? 'opacity-100' : 'opacity-0'"
                 />
-                @foreach ($trendPoints as $point)
-                    <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="3" fill="var(--color-teal-deep)" />
-                @endforeach
             </svg>
-            <div class="mt-1 flex justify-between text-xs font-semibold text-brand-text-muted uppercase">
-                @foreach ($trend as $point)
-                    <span>{{ $point['label'] }}</span>
-                @endforeach
-            </div>
+
+            {{-- Data points live as HTML/CSS dots (not SVG circles) so they stay perfectly round
+                 no matter how the chart's non-uniform viewBox gets stretched to fill the width. --}}
+            @foreach ($trendPoints as $index => $point)
+                <div class="group absolute -translate-x-1/2 -translate-y-1/2" style="left: {{ $point['xp'] }}%; top: {{ $point['yp'] }}%">
+                    <div
+                        class="size-2.5 scale-0 rounded-full bg-teal-deep ring-4 ring-teal-bg transition-transform duration-500 ease-out group-hover:scale-150 dark:ring-zinc-900"
+                        :class="shown && 'scale-100'"
+                        style="transition-delay: {{ 650 + $index * 90 }}ms"
+                    ></div>
+                    <div class="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2.5 -translate-x-1/2 rounded-lg bg-zinc-800 px-2.5 py-1.5 text-xs font-semibold whitespace-nowrap text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 dark:bg-zinc-950">
+                        {{ $trend[$index]['label'] }} · {{ $trend[$index]['count'] }}
+                        <div class="absolute top-full left-1/2 size-0 -translate-x-1/2 border-4 border-transparent border-t-zinc-800 dark:border-t-zinc-950"></div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="mt-2 flex justify-between text-xs font-semibold text-brand-text-muted uppercase">
+            @foreach ($trend as $point)
+                <span>{{ $point['label'] }}</span>
+            @endforeach
         </div>
     </div>
 
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {{-- Recent alerts --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        <div
+            class="translate-y-2 rounded-xl border border-zinc-200 bg-white p-6 opacity-0 shadow-sm transition-all duration-700 ease-out dark:border-zinc-700 dark:bg-zinc-900"
+            x-data
+            x-init="setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), 300)"
+        >
             <flux:heading size="lg" class="mb-1">{{ __('Alertas recientes') }}</flux:heading>
             <flux:text class="mb-4 text-sm text-brand-text-muted!">{{ __('Casos abiertos que requieren seguimiento.') }}</flux:text>
 
@@ -236,7 +294,7 @@
 
             <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
                 @forelse ($this->recentAlerts as $alert)
-                    <div class="flex items-center justify-between gap-3 py-3">
+                    <div class="flex items-center justify-between gap-3 py-3 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
                         <div class="min-w-0">
                             <div class="truncate font-medium text-brand-text">{{ $alert->student->user->name }}</div>
                             <div class="truncate text-sm text-brand-text-muted">{{ $alert->message }}</div>
@@ -257,7 +315,11 @@
         </div>
 
         {{-- Top students --}}
-        <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+        <div
+            class="translate-y-2 rounded-xl border border-zinc-200 bg-white p-6 opacity-0 shadow-sm transition-all duration-700 ease-out dark:border-zinc-700 dark:bg-zinc-900"
+            x-data
+            x-init="setTimeout(() => $el.classList.remove('opacity-0', 'translate-y-2'), 360)"
+        >
             <flux:heading size="lg" class="mb-1">{{ __('Estudiantes destacados') }}</flux:heading>
             <flux:text class="mb-4 text-sm text-brand-text-muted!">{{ __('Los que más puntos han ganado con retos verificados.') }}</flux:text>
 
