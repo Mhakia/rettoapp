@@ -82,7 +82,10 @@
 
                                 <div class="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
                                     @forelse ($this->filteredInstitutions as $institution)
-                                        <flux:checkbox wire:key="institution-{{ $institution->uuid }}" wire:model="institutionUuids" value="{{ $institution->uuid }}" :label="$institution->name" class="p-2" />
+                                        <label wire:key="institution-{{ $institution->uuid }}" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 select-none hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                                            <flux:checkbox wire:model="institutionUuids" value="{{ $institution->uuid }}" />
+                                            <span class="text-sm text-brand-text" x-on:click="$el.previousElementSibling.click()">{{ $institution->name }}</span>
+                                        </label>
                                     @empty
                                         <flux:text class="p-2 text-sm text-brand-text-muted!">{{ __('No se encontraron instituciones.') }}</flux:text>
                                     @endforelse

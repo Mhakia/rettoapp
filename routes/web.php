@@ -4,9 +4,11 @@ use App\Http\Controllers\HomeController;
 use App\Livewire\Actors\CreateGuardian;
 use App\Livewire\Actors\CreateStudent;
 use App\Livewire\Actors\CreateTeacher;
+use App\Livewire\Actors\GuardiansRoster;
 use App\Livewire\Actors\ImportStudents;
 use App\Livewire\Actors\ImportTeachers;
-use App\Livewire\Actors\Roster;
+use App\Livewire\Actors\StudentsRoster;
+use App\Livewire\Actors\TeachersRoster;
 use App\Livewire\Challenges\Catalog;
 use App\Livewire\Challenges\Index as ChallengesIndex;
 use App\Livewire\Challenges\ManageChallenges;
@@ -24,9 +26,17 @@ Route::get('/', HomeController::class)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
 
-    Route::livewire('actors/roster', Roster::class)
+    Route::livewire('actors/students', StudentsRoster::class)
         ->middleware('role:institution_admin')
-        ->name('actors.roster');
+        ->name('actors.students.index');
+
+    Route::livewire('actors/teachers', TeachersRoster::class)
+        ->middleware('role:institution_admin')
+        ->name('actors.teachers.index');
+
+    Route::livewire('actors/guardians', GuardiansRoster::class)
+        ->middleware('role:institution_admin')
+        ->name('actors.guardians.index');
 
     Route::livewire('actors/teachers/create', CreateTeacher::class)
         ->name('actors.teachers.create');

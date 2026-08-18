@@ -60,7 +60,7 @@ class ImportTeachers extends Component
         $this->institutionUuid = $institution->uuid;
 
         $this->backUrl = Auth::user()->hasRole('institution_admin')
-            ? route('actors.roster')
+            ? route('actors.teachers.index')
             : route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'teacher']);
     }
 

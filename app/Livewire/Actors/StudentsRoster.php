@@ -10,19 +10,12 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('Estudiantes y profesores')]
-class Roster extends Component
+#[Title('Estudiantes')]
+class StudentsRoster extends Component
 {
     use WithPagination;
 
-    public string $role = 'student';
-
     public string $search = '';
-
-    public function updatedRole(): void
-    {
-        $this->resetPage();
-    }
 
     public function updatedSearch(): void
     {
@@ -30,28 +23,22 @@ class Roster extends Component
     }
 
     /**
-     * Keyset (cursor) pagination stays fast no matter how many members the institution has.
+     * Keyset (cursor) pagination stays fast no matter how many students the institution has.
      */
     #[Computed]
     public function memberships()
     {
         $search = trim($this->search);
 
-        return InstitutionMembership::with(['group'])
-            ->with($this->role === 'student' ? ['user.studentProfile.guardians'] : ['user.teacherGroups'])
+        return InstitutionMembership::with(['group', 'user.studentProfile.guardians'])
             ->where('institution_id', Auth::user()->institution_id)
             ->where('status', 'active')
-            ->whereHas('user', fn ($query) => $query->role($this->role))
+            ->whereHas('user', fn ($query) => $query->role('student'))
             ->when($search !== '', function ($query) use ($search) {
+                // ILIKE (case-insensitive) is accelerated by the pg_trgm GIN indexes on these columns.
                 $query->where(function ($q) use ($search) {
-                    // ILIKE (case-insensitive) is accelerated by the pg_trgm GIN indexes on these columns.
-                    $q->whereHas('user', fn ($u) => $u->where('name', 'ilike', "%{$search}%"));
-
-                    if ($this->role === 'student') {
-                        $q->orWhereHas('user.studentProfile', fn ($s) => $s->where('document_number', 'ilike', "%{$search}%"));
-                    } else {
-                        $q->orWhereHas('user', fn ($u) => $u->where('document_number', 'ilike', "%{$search}%"));
-                    }
+                    $q->whereHas('user', fn ($u) => $u->where('name', 'ilike', "%{$search}%"))
+                        ->orWhereHas('user.studentProfile', fn ($s) => $s->where('document_number', 'ilike', "%{$search}%"));
                 });
             })
             ->orderByDesc('id')
@@ -65,7 +52,7 @@ class Roster extends Component
     #[Computed]
     public function membershipsCacheKey(): string
     {
-        return md5($this->role.'|'.$this->memberships->pluck('id')->implode(','));
+        return md5($this->memberships->pluck('id')->implode(','));
     }
 
     /**
@@ -79,29 +66,19 @@ class Roster extends Component
     {
         return $this->memberships->getCollection()->mapWithKeys(function (InstitutionMembership $membership) {
             $user = $membership->user;
+            $student = $user->studentProfile;
 
-            $detail = [
+            return [$membership->id => [
                 'name' => $user->name,
                 'initials' => $user->initials(),
                 'email' => $user->email,
                 'group' => $membership->group?->name,
                 'started_at' => $membership->started_at?->format('d/m/Y'),
-            ];
-
-            if ($this->role === 'student') {
-                $student = $user->studentProfile;
-                $detail['document_type'] = $student?->document_type;
-                $detail['document_number'] = $student?->document_number;
-                $detail['birth_date'] = $student?->birth_date?->format('d/m/Y');
-                $detail['guardians'] = $student?->guardians->map(fn ($g) => ['name' => $g->name, 'email' => $g->email])->all() ?? [];
-            } else {
-                $detail['document_type'] = $user->document_type;
-                $detail['document_number'] = $user->document_number;
-                $detail['phone'] = $user->phone;
-                $detail['groups'] = $user->teacherGroups->pluck('name')->all();
-            }
-
-            return [$membership->id => $detail];
+                'document_type' => $student?->document_type,
+                'document_number' => $student?->document_number,
+                'birth_date' => $student?->birth_date?->format('d/m/Y'),
+                'guardians' => $student?->guardians->map(fn ($g) => ['name' => $g->name, 'email' => $g->email])->all() ?? [],
+            ]];
         })->all();
     }
 
@@ -115,6 +92,6 @@ class Roster extends Component
 
     public function render()
     {
-        return view('livewire.actors.roster');
+        return view('livewire.actors.students-roster');
     }
 }

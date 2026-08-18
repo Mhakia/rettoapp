@@ -100,9 +100,12 @@
 
             <flux:input wire:model.live.debounce.300ms="studentSearch" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="mb-4" />
 
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-1">
                 @forelse ($this->students as $student)
-                    <flux:checkbox wire:key="student-{{ $student->id }}" wire:model="student_ids" value="{{ $student->id }}" :label="$student->user->name" class="p-2" />
+                    <label wire:key="student-{{ $student->id }}" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 select-none hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                        <flux:checkbox wire:model="student_ids" value="{{ $student->id }}" />
+                        <span class="text-sm text-brand-text" x-on:click="$el.previousElementSibling.click()">{{ $student->user->name }}</span>
+                    </label>
                 @empty
                     <flux:text class="text-sm text-brand-text-muted!">{{ __('No se encontraron estudiantes disponibles para vincular.') }}</flux:text>
                 @endforelse

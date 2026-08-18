@@ -24,9 +24,12 @@
             <form wire:submit="save" class="space-y-4">
                 <flux:input wire:model.live.debounce.300ms="studentSearch" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" />
 
-                <div class="max-h-72 space-y-2 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
+                <div class="max-h-72 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
                     @forelse ($this->students as $student)
-                        <flux:checkbox wire:key="guardian-{{ $guardianId }}-student-{{ $student->id }}" wire:model="student_ids" value="{{ $student->id }}" :label="$student->user->name" class="p-2" />
+                        <label wire:key="guardian-{{ $guardianId }}-student-{{ $student->id }}" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 select-none hover:bg-zinc-50 dark:hover:bg-zinc-800/60">
+                            <flux:checkbox wire:model="student_ids" value="{{ $student->id }}" />
+                            <span class="text-sm text-brand-text" x-on:click="$el.previousElementSibling.click()">{{ $student->user->name }}</span>
+                        </label>
                     @empty
                         <flux:text class="p-2 text-sm text-brand-text-muted!">{{ __('No se encontraron estudiantes.') }}</flux:text>
                     @endforelse

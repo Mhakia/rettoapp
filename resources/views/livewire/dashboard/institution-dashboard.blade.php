@@ -49,9 +49,11 @@
             <flux:heading size="xl" class="text-teal-deep!">{{ $this->institution->name }}</flux:heading>
             <flux:text class="text-brand-text-muted!">{{ __('Resumen general de tu institución.') }}</flux:text>
         </div>
-        <flux:button icon="user-group" variant="primary" href="{{ route('actors.roster') }}" wire:navigate>
-            {{ __('Ver estudiantes y profesores') }}
-        </flux:button>
+        {{-- <div class="flex flex-wrap items-center gap-2">
+            <flux:button icon="academic-cap" href="{{ route('actors.students.index') }}" wire:navigate>{{ __('Estudiantes') }}</flux:button>
+            <flux:button icon="user-group" href="{{ route('actors.teachers.index') }}" wire:navigate>{{ __('Profesores') }}</flux:button>
+            <flux:button icon="heart" href="{{ route('actors.guardians.index') }}" wire:navigate>{{ __('Acudientes') }}</flux:button>
+        </div> --}}
     </div>
 
     {{-- KPI cards --}}

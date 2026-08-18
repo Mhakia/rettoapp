@@ -23,6 +23,22 @@
                     @endcan
                 </flux:sidebar.group>
 
+                @role('institution_admin')
+                    <flux:sidebar.group :heading="__('Mi institución')" class="grid">
+                        <flux:sidebar.item icon="academic-cap" :href="route('actors.students.index')" :current="request()->routeIs('actors.students.*')" wire:navigate>
+                            {{ __('Estudiantes') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="user-group" :href="route('actors.teachers.index')" :current="request()->routeIs('actors.teachers.*')" wire:navigate>
+                            {{ __('Profesores') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="heart" :href="route('actors.guardians.index')" :current="request()->routeIs('actors.guardians.*')" wire:navigate>
+                            {{ __('Acudientes') }}
+                        </flux:sidebar.item>
+                    </flux:sidebar.group>
+                @endrole
+
                 @canany(['complete-challenge', 'create-challenge', 'update-challenge', 'verify-challenge', 'view-challenge-statistics'])
                     <flux:sidebar.group :heading="__('Retos')" class="grid">
                         @can('complete-challenge')
