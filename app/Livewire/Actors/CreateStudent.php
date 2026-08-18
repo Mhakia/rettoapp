@@ -14,11 +14,12 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-#[Title('Crear estudiante')]
+#[Title('Estudiante')]
 class CreateStudent extends Component
 {
     /**
@@ -37,6 +38,18 @@ class CreateStudent extends Component
      */
     public string $backUrl = '';
 
+    /**
+     * Student being edited; null means this form is creating a new one.
+     */
+    #[Locked]
+    public ?int $editingId = null;
+
+    /**
+     * Active membership id being edited, so store() knows which one to update.
+     */
+    #[Locked]
+    public ?int $membershipId = null;
+
     public string $first_name = '';
 
     public string $last_name = '';
@@ -49,11 +62,19 @@ class CreateStudent extends Component
 
     public ?int $group_id = null;
 
-    public function mount(): void
+    public function mount(?Student $student = null): void
     {
-        $institution = $this->institutionUuid
-            ? Institution::where('uuid', $this->institutionUuid)->firstOrFail()
-            : Auth::user()->institution;
+        $activeMembership = $student?->activeMembership;
+
+        if ($student) {
+            abort_unless($activeMembership, 404);
+        }
+
+        $institution = $student
+            ? Institution::findOrFail($activeMembership->institution_id)
+            : ($this->institutionUuid
+                ? Institution::where('uuid', $this->institutionUuid)->firstOrFail()
+                : Auth::user()->institution);
 
         abort_unless($institution, 403);
         $this->authorize('manageActors', $institution);
@@ -65,6 +86,17 @@ class CreateStudent extends Component
         $this->backUrl = Auth::user()->hasRole('institution_admin')
             ? route('actors.students.index')
             : route('institutions.show', ['institution' => $institution->uuid, 'tab' => 'student']);
+
+        if ($student) {
+            $this->editingId = $student->id;
+            $this->membershipId = $activeMembership->id;
+            $this->first_name = $student->user->first_name ?? '';
+            $this->last_name = $student->user->last_name ?? '';
+            $this->document_type = $student->document_type;
+            $this->document_number = $student->document_number;
+            $this->birth_date = $student->birth_date?->format('Y-m-d') ?? '';
+            $this->group_id = $activeMembership->group_id;
+        }
     }
 
     #[Computed]
@@ -78,17 +110,50 @@ class CreateStudent extends Component
         $institution = Institution::findOrFail($this->institutionId);
         $this->authorize('manageActors', $institution);
 
+        $documentRule = Rule::unique('students', 'document_number')->where('document_type', $this->document_type);
+
+        if ($this->editingId) {
+            $documentRule->ignore($this->editingId);
+        }
+
         $data = $this->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'document_type' => ['required', Rule::in(['registro_civil', 'tarjeta_identidad'])],
-            'document_number' => ['required', 'string', 'max:255', Rule::unique('students', 'document_number')->where('document_type', $this->document_type)],
+            'document_number' => ['required', 'string', 'max:255', $documentRule],
             'birth_date' => ['required', 'date', 'before:today'],
             'group_id' => ['required', 'exists:groups,id,institution_id,'.$this->institutionId],
         ]);
 
-        $institutionId = $this->institutionId;
         $name = trim("{$data['first_name']} {$data['last_name']}");
+
+        if ($this->editingId) {
+            $student = Student::findOrFail($this->editingId);
+
+            DB::transaction(function () use ($data, $name, $student) {
+                $student->user->update([
+                    'name' => $name,
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                ]);
+
+                $student->update([
+                    'document_type' => $data['document_type'],
+                    'document_number' => $data['document_number'],
+                    'birth_date' => $data['birth_date'],
+                ]);
+
+                InstitutionMembership::whereKey($this->membershipId)->update(['group_id' => $data['group_id']]);
+            });
+
+            Flux::toast(variant: 'success', text: __('Estudiante actualizado.'));
+
+            $this->redirect($this->backUrl, navigate: true);
+
+            return;
+        }
+
+        $institutionId = $this->institutionId;
 
         DB::transaction(function () use ($data, $name, $institutionId) {
             $user = User::create([

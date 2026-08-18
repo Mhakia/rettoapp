@@ -41,8 +41,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('actors/teachers/create', CreateTeacher::class)
         ->name('actors.teachers.create');
 
+    Route::livewire('actors/teachers/{teacher}/edit', CreateTeacher::class)
+        ->name('actors.teachers.edit');
+
     Route::livewire('actors/students/create', CreateStudent::class)
         ->name('actors.students.create');
+
+    Route::livewire('actors/students/{student}/edit', CreateStudent::class)
+        ->name('actors.students.edit');
 
     Route::livewire('actors/guardians/create', CreateGuardian::class)
         ->name('actors.guardians.create');

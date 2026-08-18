@@ -53,6 +53,7 @@
                         </span>
                         <div class="ml-1 flex items-center gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-700">
                             <flux:button size="sm" variant="ghost" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show({{ $membership->id }})" />
+                            <flux:button size="sm" variant="ghost" icon="pencil-square" :tooltip="__('Editar')" href="{{ route('actors.students.edit', $membership->user->studentProfile) }}" wire:navigate />
                             <livewire:actors.manage-membership-groups :membership="$membership" :key="'groups-'.$membership->id" />
                             <livewire:actors.withdraw-membership :membership="$membership" :key="$membership->id" />
                         </div>

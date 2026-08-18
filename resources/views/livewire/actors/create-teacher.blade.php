@@ -5,7 +5,7 @@
         </flux:button>
 
         <div class="rounded-xl border border-teal-border bg-teal-bg px-6 py-5">
-            <flux:heading size="xl" class="text-teal-deep!">{{ __('Crear profesor') }}</flux:heading>
+            <flux:heading size="xl" class="text-teal-deep!">{{ $editingId ? __('Editar profesor') : __('Crear profesor') }}</flux:heading>
             <flux:text class="text-brand-text-muted!">
                 {{ __('Registra los datos del profesor y asígnalo a los salones o grupos que estará a cargo.') }}
             </flux:text>
@@ -14,10 +14,12 @@
             </flux:text>
         </div>
 
-        <flux:text class="mt-3 text-sm text-brand-text-muted!">
-            {{ __('¿Vas a crear varios profesores?') }}
-            <flux:link href="{{ route('actors.teachers.import', ['institution' => $institutionUuid]) }}" wire:navigate>{{ __('Cárgalos desde un archivo de Excel') }}</flux:link>
-        </flux:text>
+        @unless ($editingId)
+            <flux:text class="mt-3 text-sm text-brand-text-muted!">
+                {{ __('¿Vas a crear varios profesores?') }}
+                <flux:link href="{{ route('actors.teachers.import', ['institution' => $institutionUuid]) }}" wire:navigate>{{ __('Cárgalos desde un archivo de Excel') }}</flux:link>
+            </flux:text>
+        @endunless
     </div>
 
     <form wire:submit="store" class="space-y-6">
@@ -51,7 +53,9 @@
                     <flux:input wire:model="email" type="email" :label="__('Correo (usuario de acceso)')" />
                 </div>
                 <flux:text class="text-sm text-brand-text-muted!">
-                    {{ __('Se enviará un correo al profesor para que cree su propia contraseña, igual que al crear una institución.') }}
+                    @unless ($editingId)
+                        {{ __('Se enviará un correo al profesor para que cree su propia contraseña, igual que al crear una institución.') }}
+                    @endunless
                 </flux:text>
             </div>
         </div>
@@ -81,7 +85,7 @@
 
         <div class="flex justify-end gap-2">
             <flux:button variant="ghost" href="{{ $backUrl }}" wire:navigate>{{ __('Cancelar') }}</flux:button>
-            <flux:button variant="primary" type="submit">{{ __('Crear profesor') }}</flux:button>
+            <flux:button variant="primary" type="submit">{{ $editingId ? __('Guardar cambios') : __('Crear profesor') }}</flux:button>
         </div>
     </form>
 </section>
