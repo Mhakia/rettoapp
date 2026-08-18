@@ -46,6 +46,7 @@ class WithdrawMembership extends Component
 
         Flux::toast(variant: 'success', text: __('Matrícula cerrada.'));
         $this->reset('reason');
+        $this->dispatch('modal-close', name: "withdraw-{$this->membershipId}");
         $this->dispatch('membership-withdrawn');
     }
 

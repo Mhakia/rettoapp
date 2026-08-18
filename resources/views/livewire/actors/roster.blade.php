@@ -1,24 +1,32 @@
 <section class="w-full">
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-teal-border bg-teal-bg px-6 py-5">
         <div>
-            <flux:heading size="lg">{{ __('Estudiantes y profesores') }}</flux:heading>
-            <flux:text>{{ __('Matrículas activas en tu institución.') }}</flux:text>
+            <flux:heading size="xl" class="text-teal-deep!">{{ __('Estudiantes y profesores') }}</flux:heading>
+            <flux:text class="text-brand-text-muted!">{{ __('Matrículas activas en tu institución.') }}</flux:text>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+            <flux:button icon="academic-cap" variant="primary" href="{{ route('actors.students.create') }}" wire:navigate>{{ __('Nuevo estudiante') }}</flux:button>
             <flux:button icon="user-plus" href="{{ route('actors.teachers.create') }}" wire:navigate>{{ __('Nuevo profesor') }}</flux:button>
-            <flux:button icon="arrow-up-tray" href="{{ route('actors.teachers.import') }}" wire:navigate>{{ __('Cargar profesores') }}</flux:button>
-            <flux:button icon="academic-cap" href="{{ route('actors.students.create') }}" wire:navigate>{{ __('Nuevo estudiante') }}</flux:button>
-            <flux:button icon="arrow-up-tray" href="{{ route('actors.students.import') }}" wire:navigate>{{ __('Cargar estudiantes') }}</flux:button>
-            <flux:button href="{{ route('actors.enroll') }}" wire:navigate>{{ __('Matricular / vincular') }}</flux:button>
+            <flux:dropdown position="bottom" align="end">
+                <flux:button icon:trailing="chevron-down">{{ __('Más acciones') }}</flux:button>
+                <flux:menu>
+                    <flux:menu.item icon="arrow-up-tray" href="{{ route('actors.students.import') }}" wire:navigate>{{ __('Cargar estudiantes') }}</flux:menu.item>
+                    <flux:menu.item icon="arrow-up-tray" href="{{ route('actors.teachers.import') }}" wire:navigate>{{ __('Cargar profesores') }}</flux:menu.item>
+                    <flux:menu.separator />
+                    <flux:menu.item icon="link" href="{{ route('actors.enroll') }}" wire:navigate>{{ __('Matricular / vincular') }}</flux:menu.item>
+                </flux:menu>
+            </flux:dropdown>
         </div>
     </div>
 
-    <flux:radio.group wire:model.live="role" variant="segmented" class="mb-4">
-        <flux:radio value="student" :label="__('Estudiantes')" />
-        <flux:radio value="teacher" :label="__('Profesores')" />
-    </flux:radio.group>
+    <div class="mb-4 flex flex-col gap-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:radio.group wire:model.live="role" variant="segmented">
+            <flux:radio value="student" icon="academic-cap" :label="__('Estudiantes')" />
+            <flux:radio value="teacher" icon="user-group" :label="__('Profesores')" />
+        </flux:radio.group>
 
-    <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="mb-6 max-w-md" />
+        <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="sm:max-w-xs" />
+    </div>
 
     <div
         wire:key="roster-{{ $this->membershipsCacheKey }}"
@@ -34,58 +42,64 @@
             },
             show(id) { this.selected = this.details[id]; $dispatch('modal-show', { name: 'membership-detail' }); },
         }"
+        class="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900"
     >
-    <div class="divide-y">
+    <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
         @forelse ($this->memberships as $membership)
-            <div class="py-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div class="flex min-w-0 items-center gap-3">
-                        <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-bg text-sm font-bold text-teal-deep">
-                            {{ $membership->user->initials() }}
-                        </span>
-                        <div class="min-w-0">
-                            <button type="button" x-on:click="show({{ $membership->id }})" class="text-left font-medium hover:underline">
-                                {{ $membership->user->name }}
-                            </button>
-                            <flux:text class="block truncate text-sm text-gray-500">
-                                @if ($role === 'student')
-                                    {{ $membership->user->studentProfile?->document_number ?? __('Sin documento') }}
-                                @else
-                                    {{ $membership->user->document_number ?? __('Sin documento') }}
-                                    @if ($membership->user->phone)
-                                        · {{ $membership->user->phone }}
-                                    @endif
+            <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/40">
+                <div class="flex min-w-0 items-center gap-3">
+                    <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-teal-bg text-sm font-bold text-teal-deep">
+                        {{ $membership->user->initials() }}
+                    </span>
+                    <div class="min-w-0">
+                        <button type="button" x-on:click="show({{ $membership->id }})" class="text-left font-semibold text-brand-text hover:text-teal-deep hover:underline">
+                            {{ $membership->user->name }}
+                        </button>
+                        <flux:text class="block truncate text-sm text-brand-text-muted!">
+                            @if ($role === 'student')
+                                {{ $membership->user->studentProfile?->document_number ?? __('Sin documento') }}
+                            @else
+                                {{ $membership->user->document_number ?? __('Sin documento') }}
+                                @if ($membership->user->phone)
+                                    · {{ $membership->user->phone }}
                                 @endif
-                            </flux:text>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center justify-end gap-2">
-                        @if ($role === 'student')
-                            <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">
-                                {{ $membership->group?->name ?? __('Sin grupo') }}
-                            </span>
-                        @else
-                            @forelse ($membership->user->teacherGroups as $group)
-                                <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">{{ $group->name }}</span>
-                            @empty
-                                <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-500 uppercase dark:bg-zinc-800">{{ __('Sin grupos') }}</span>
-                            @endforelse
-                        @endif
-                        <span class="whitespace-nowrap rounded-full bg-teal-bg px-3 py-1 text-xs font-bold text-teal-deep uppercase">
-                            {{ __('Desde :date', ['date' => $membership->started_at->format('d/m/Y')]) }}
-                        </span>
-                        <flux:button size="sm" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show({{ $membership->id }})" />
+                            @endif
+                        </flux:text>
                     </div>
                 </div>
-                <livewire:actors.withdraw-membership :membership="$membership" :key="$membership->id" />
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                    @if ($role === 'student')
+                        <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">
+                            {{ $membership->group?->name ?? __('Sin grupo') }}
+                        </span>
+                    @else
+                        @forelse ($membership->user->teacherGroups as $group)
+                            <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">{{ $group->name }}</span>
+                        @empty
+                            <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-500 uppercase dark:bg-zinc-800">{{ __('Sin grupos') }}</span>
+                        @endforelse
+                    @endif
+                    <span class="hidden whitespace-nowrap rounded-full bg-teal-bg px-3 py-1 text-xs font-bold text-teal-deep uppercase sm:inline-block">
+                        {{ __('Desde :date', ['date' => $membership->started_at->format('d/m/Y')]) }}
+                    </span>
+                    <div class="ml-1 flex items-center gap-1 border-l border-zinc-200 pl-2 dark:border-zinc-700">
+                        <flux:button size="sm" variant="ghost" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show({{ $membership->id }})" />
+                        <livewire:actors.withdraw-membership :membership="$membership" :key="$membership->id" />
+                    </div>
+                </div>
             </div>
         @empty
-            <flux:text class="py-4">{{ __('No hay matrículas activas para este rol.') }}</flux:text>
+            <div class="flex flex-col items-center gap-3 px-6 py-16 text-center">
+                <span class="flex size-14 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 dark:bg-zinc-800">
+                    <flux:icon icon="user-group" variant="outline" class="size-7" />
+                </span>
+                <flux:text class="text-brand-text-muted!">{{ __('No hay matrículas activas para este rol.') }}</flux:text>
+            </div>
         @endforelse
     </div>
 
     @if ($this->memberships->hasPages())
-        <div class="mt-4">
+        <div class="border-t border-zinc-100 px-5 py-3 dark:border-zinc-800">
             {{ $this->memberships->links() }}
         </div>
     @endif
@@ -162,3 +176,4 @@
     </flux:modal>
     </div>
 </section>
+
