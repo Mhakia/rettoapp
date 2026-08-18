@@ -179,7 +179,7 @@
         @endif
     </div>
 
-    <flux:modal name="challenge-detail" class="w-full max-w-2xl">
+    <flux:modal name="challenge-detail" :dismissible="false" class="w-full max-w-2xl">
         <template x-if="selected">
             <div class="space-y-6">
                 <div class="flex items-start justify-between gap-3">

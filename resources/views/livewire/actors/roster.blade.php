@@ -23,14 +23,20 @@
         <flux:radio.group wire:model.live="role" variant="segmented">
             <flux:radio value="student" icon="academic-cap" :label="__('Estudiantes')" />
             <flux:radio value="teacher" icon="user-group" :label="__('Profesores')" />
+            <flux:radio value="guardian" icon="heart" :label="__('Acudientes')" />
         </flux:radio.group>
 
-        <div class="flex flex-wrap items-center gap-2">
-            <livewire:actors.reenroll-member :role="$role" :key="'reenroll-'.$role" />
-            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="sm:max-w-xs" />
-        </div>
+        @if ($role !== 'guardian')
+            <div class="flex flex-wrap items-center gap-2">
+                <livewire:actors.reenroll-member :role="$role" :key="'reenroll-'.$role" />
+                <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o número de documento...')" class="sm:max-w-xs" />
+            </div>
+        @endif
     </div>
 
+    @if ($role === 'guardian')
+        <livewire:actors.guardians-roster :key="'guardians-roster'" />
+    @else
     <div
         wire:key="roster-{{ $this->membershipsCacheKey }}"
         x-data="{
@@ -108,7 +114,7 @@
         </div>
     @endif
 
-    <flux:modal name="membership-detail" class="w-full max-w-lg">
+    <flux:modal name="membership-detail" :dismissible="false" class="w-full max-w-lg">
         <template x-if="selected">
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
@@ -179,5 +185,6 @@
         </template>
     </flux:modal>
     </div>
+    @endif
 </section>
 

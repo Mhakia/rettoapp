@@ -125,7 +125,7 @@
                 </div>
             @endif
 
-            <flux:modal name="membership-detail" class="w-full max-w-lg">
+            <flux:modal name="membership-detail" :dismissible="false" class="w-full max-w-lg">
                 <template x-if="selected">
                     <div class="space-y-4">
                         <div class="flex items-center gap-3">

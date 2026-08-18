@@ -6,7 +6,7 @@
         {{ $role === 'student' ? __('Matricular estudiante existente') : __('Matricular profesor existente') }}
     </flux:button>
 
-    <flux:modal name="reenroll-{{ $role }}" class="w-full max-w-lg">
+    <flux:modal name="reenroll-{{ $role }}" :dismissible="false" class="w-full max-w-lg">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-bg text-teal-deep">

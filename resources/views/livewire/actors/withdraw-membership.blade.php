@@ -8,7 +8,7 @@
         x-on:click="$dispatch('modal-show', { name: 'withdraw-{{ $membershipId }}' })"
     />
 
-    <flux:modal name="withdraw-{{ $membershipId }}" class="w-full max-w-md">
+    <flux:modal name="withdraw-{{ $membershipId }}" :dismissible="false" class="w-full max-w-md">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400">

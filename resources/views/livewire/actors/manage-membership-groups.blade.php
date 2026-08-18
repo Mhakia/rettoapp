@@ -7,7 +7,7 @@
         x-on:click="$dispatch('modal-show', { name: 'manage-groups-{{ $membershipId }}' })"
     />
 
-    <flux:modal name="manage-groups-{{ $membershipId }}" class="w-full max-w-md">
+    <flux:modal name="manage-groups-{{ $membershipId }}" :dismissible="false" class="w-full max-w-md">
         <div class="space-y-4">
             <div class="flex items-center gap-3">
                 <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-teal-bg text-teal-deep">
