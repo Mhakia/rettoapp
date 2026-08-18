@@ -104,6 +104,7 @@ class Show extends Component
 
             $detail = [
                 'name' => $user->name,
+                'initials' => $user->initials(),
                 'email' => $user->email,
                 'group' => $membership->group?->name,
                 'started_at' => $membership->started_at?->format('d/m/Y'),
@@ -118,6 +119,7 @@ class Show extends Component
             } else {
                 $detail['document_type'] = $user->document_type;
                 $detail['document_number'] = $user->document_number;
+                $detail['phone'] = $user->phone;
                 $detail['groups'] = $user->teacherGroups->pluck('name')->all();
             }
 

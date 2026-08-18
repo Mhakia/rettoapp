@@ -40,4 +40,14 @@ class InstitutionPolicy
     {
         return $user->can('assign-institution-admin');
     }
+
+    /**
+     * Create/bulk-import teachers or students for an institution. Excludes pedagogue on purpose:
+     * that role is focused on challenges, not on managing an institution's roster.
+     */
+    public function manageActors(User $user, Institution $institution): bool
+    {
+        return $user->can('manage-institution-members')
+            || $user->institution_id === $institution->id;
+    }
 }

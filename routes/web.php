@@ -1,7 +1,11 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Livewire\Actors\CreateStudent;
+use App\Livewire\Actors\CreateTeacher;
 use App\Livewire\Actors\EnrollActor;
+use App\Livewire\Actors\ImportStudents;
+use App\Livewire\Actors\ImportTeachers;
 use App\Livewire\Actors\Roster;
 use App\Livewire\Challenges\Catalog;
 use App\Livewire\Challenges\Index as ChallengesIndex;
@@ -27,6 +31,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('actors/roster', Roster::class)
         ->middleware('role:institution_admin')
         ->name('actors.roster');
+
+    Route::livewire('actors/teachers/create', CreateTeacher::class)
+        ->name('actors.teachers.create');
+
+    Route::livewire('actors/students/create', CreateStudent::class)
+        ->name('actors.students.create');
+
+    Route::livewire('actors/teachers/import', ImportTeachers::class)
+        ->name('actors.teachers.import');
+
+    Route::livewire('actors/students/import', ImportStudents::class)
+        ->name('actors.students.import');
 
     Route::livewire('institutions', InstitutionsIndex::class)
         ->middleware('permission:view-institutions')
