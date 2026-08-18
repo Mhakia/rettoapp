@@ -63,7 +63,7 @@
                                 @if ($this->selectedInstitutions->isNotEmpty())
                                     <div class="flex flex-wrap gap-2">
                                         @foreach ($this->selectedInstitutions as $institution)
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-teal-bg py-1 ps-3 pe-1.5 text-sm font-medium text-teal-deep">
+                                            <span wire:key="selected-institution-{{ $institution->uuid }}" class="inline-flex items-center gap-1.5 rounded-full bg-teal-bg py-1 ps-3 pe-1.5 text-sm font-medium text-teal-deep">
                                                 {{ $institution->name }}
                                                 <button
                                                     type="button"
@@ -82,7 +82,7 @@
 
                                 <div class="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
                                     @forelse ($this->filteredInstitutions as $institution)
-                                        <flux:checkbox wire:model="institutionUuids" value="{{ $institution->uuid }}" :label="$institution->name" class="p-2" />
+                                        <flux:checkbox wire:key="institution-{{ $institution->uuid }}" wire:model="institutionUuids" value="{{ $institution->uuid }}" :label="$institution->name" class="p-2" />
                                     @empty
                                         <flux:text class="p-2 text-sm text-brand-text-muted!">{{ __('No se encontraron instituciones.') }}</flux:text>
                                     @endforelse

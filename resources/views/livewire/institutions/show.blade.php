@@ -47,7 +47,7 @@
         @if ($tab === 'group')
             <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
                 @forelse ($this->groups as $group)
-                    <div class="flex items-center justify-between px-4 py-3">
+                    <div wire:key="group-{{ $group->id }}" class="flex items-center justify-between px-4 py-3">
                         <flux:text class="font-semibold text-brand-text!">{{ $group->name }}</flux:text>
                         <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">
                             {{ __(':count matrículas', ['count' => $group->memberships_count]) }}
@@ -75,7 +75,7 @@
             >
             <div class="divide-y divide-zinc-100 dark:divide-zinc-800">
                 @forelse ($this->memberships as $membership)
-                    <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                    <div wire:key="membership-{{ $membership->id }}" class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
                         <div class="flex min-w-0 items-center gap-3">
                             <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-bg text-sm font-bold text-teal-deep">
                                 {{ $membership->user->initials() }}
@@ -103,7 +103,7 @@
                                 </span>
                             @else
                                 @forelse ($membership->user->teacherGroups as $group)
-                                    <span class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">{{ $group->name }}</span>
+                                    <span wire:key="membership-{{ $membership->id }}-group-{{ $group->id }}" class="rounded-full bg-amber-bg px-3 py-1 text-xs font-bold text-amber uppercase">{{ $group->name }}</span>
                                 @empty
                                     <span class="rounded-full bg-zinc-100 px-3 py-1 text-xs font-bold text-zinc-500 uppercase dark:bg-zinc-800">{{ __('Sin grupos') }}</span>
                                 @endforelse

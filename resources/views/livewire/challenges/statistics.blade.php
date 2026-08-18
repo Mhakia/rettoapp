@@ -14,7 +14,7 @@
             </thead>
             <tbody>
                 @foreach ($this->byChallenge as $challenge)
-                    <tr class="border-t">
+                    <tr wire:key="challenge-{{ $challenge->id }}" class="border-t">
                         <td class="py-2">{{ $challenge->title }}</td>
                         <td>{{ $challenge->submitted_count }}</td>
                         <td>{{ $challenge->verified_count }}</td>

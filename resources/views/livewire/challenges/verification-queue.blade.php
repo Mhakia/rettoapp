@@ -3,7 +3,7 @@
 
     <div class="mt-6 divide-y">
         @forelse ($this->pending as $completion)
-            <div class="flex items-center justify-between py-4">
+            <div wire:key="completion-{{ $completion->id }}" class="flex items-center justify-between py-4">
                 <div>
                     <flux:text class="font-medium">{{ $completion->challenge->title }}</flux:text>
                     <flux:text class="text-sm text-gray-500">{{ $completion->user->name }} · {{ $completion->submitted_at?->diffForHumans() }}</flux:text>

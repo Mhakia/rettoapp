@@ -5,7 +5,7 @@
         @foreach ($this->challenges as $challenge)
             @php($completion = $challenge->completions->first())
 
-            <flux:card class="space-y-2">
+            <flux:card wire:key="challenge-{{ $challenge->ulid }}" class="space-y-2">
                 <div class="flex items-center justify-between">
                     <flux:heading size="sm">{{ $challenge->title }}</flux:heading>
                     <flux:badge>{{ $challenge->points }} pts</flux:badge>

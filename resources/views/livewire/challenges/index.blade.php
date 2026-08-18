@@ -89,7 +89,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                     @forelse ($this->challenges as $challenge)
-                        <tr class="transition hover:bg-zinc-50 dark:hover:bg-white/5">
+                        <tr wire:key="challenge-{{ $challenge->ulid }}" class="transition hover:bg-zinc-50 dark:hover:bg-white/5">
                             <td class="px-4 py-3">
                                 <button type="button" x-on:click="show('{{ $challenge->ulid }}')" class="font-mono text-xs font-bold text-teal-deep hover:underline dark:text-teal">
                                     {{ $challenge->code }}

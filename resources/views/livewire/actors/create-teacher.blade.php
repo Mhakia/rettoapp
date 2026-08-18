@@ -69,7 +69,7 @@
 
             <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @forelse ($this->groups as $group)
-                    <flux:checkbox wire:model="group_ids" value="{{ $group->id }}" :label="$group->name" class="p-2" />
+                    <flux:checkbox wire:key="group-{{ $group->id }}" wire:model="group_ids" value="{{ $group->id }}" :label="$group->name" class="p-2" />
                 @empty
                     <flux:text class="text-sm text-brand-text-muted!">{{ __('Tu institución aún no tiene salones o grupos creados.') }}</flux:text>
                 @endforelse

@@ -55,7 +55,7 @@
     >
     <div class="grid gap-5 sm:grid-cols-2">
         @foreach ($this->institutions as $institution)
-            <div class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-teal-border hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
+            <div wire:key="institution-{{ $institution->uuid }}" class="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-teal-border hover:shadow-md dark:border-zinc-700 dark:bg-zinc-900">
                 <div class="mb-3 flex items-start justify-between gap-3">
                     <div>
                         <button type="button" x-on:click="show('{{ $institution->uuid }}')" class="text-left">
