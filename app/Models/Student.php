@@ -38,6 +38,7 @@ class Student extends Model
         'document_type',
         'document_number',
         'birth_date',
+        'import_batch_id',
     ];
 
     protected function casts(): array
@@ -50,6 +51,11 @@ class Student extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function importBatch(): BelongsTo
+    {
+        return $this->belongsTo(ImportBatch::class);
     }
 
     public function memberships(): HasMany

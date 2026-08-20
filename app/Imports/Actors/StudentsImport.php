@@ -3,6 +3,7 @@
 namespace App\Imports\Actors;
 
 use App\Models\Group;
+use App\Models\ImportBatch;
 use App\Models\Institution;
 use App\Models\InstitutionMembership;
 use App\Models\Student;
@@ -46,7 +47,7 @@ class StudentsImport implements SkipsEmptyRows, SkipsOnFailure, ToModel, WithChu
      */
     public array $creationErrors = [];
 
-    public function __construct(private readonly Institution $institution) {}
+    public function __construct(private readonly Institution $institution, private readonly ?ImportBatch $importBatch = null) {}
 
     public function chunkSize(): int
     {
@@ -94,6 +95,7 @@ class StudentsImport implements SkipsEmptyRows, SkipsOnFailure, ToModel, WithChu
                     'document_type' => $documentType,
                     'document_number' => $documentNumber,
                     'birth_date' => $birthDate,
+                    'import_batch_id' => $this->importBatch?->id,
                 ]);
 
                 InstitutionMembership::create([

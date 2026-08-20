@@ -3,6 +3,7 @@
 namespace App\Imports\Actors;
 
 use App\Models\Group;
+use App\Models\ImportBatch;
 use App\Models\Institution;
 use App\Models\InstitutionMembership;
 use App\Models\User;
@@ -46,7 +47,7 @@ class TeachersImport implements SkipsEmptyRows, SkipsOnFailure, ToModel, WithChu
      */
     public array $creationErrors = [];
 
-    public function __construct(private readonly Institution $institution) {}
+    public function __construct(private readonly Institution $institution, private readonly ?ImportBatch $importBatch = null) {}
 
     public function chunkSize(): int
     {
@@ -82,6 +83,7 @@ class TeachersImport implements SkipsEmptyRows, SkipsOnFailure, ToModel, WithChu
                     'phone' => trim((string) $row['celular']),
                     'email' => trim((string) $row['correo']),
                     'password' => Hash::make(Str::random(32)),
+                    'import_batch_id' => $this->importBatch?->id,
                 ]);
                 $teacher->assignRole('teacher');
 

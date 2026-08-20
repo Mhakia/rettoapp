@@ -4,6 +4,7 @@ namespace App\Livewire\Actors;
 
 use App\Exports\Actors\StudentImportTemplateExport;
 use App\Imports\Actors\StudentsImport;
+use App\Models\ImportBatch;
 use App\Models\Institution;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
@@ -100,7 +101,17 @@ class ImportStudents extends Component
         set_time_limit(120);
 
         $institution = Institution::findOrFail($this->institutionId);
-        $import = new StudentsImport($institution);
+
+        $importBatch = ImportBatch::create([
+            'uploaded_by' => Auth::id(),
+            'institution_id' => $institution->id,
+            'type' => 'students',
+            'original_filename' => $this->file->getClientOriginalName(),
+            'file_hash' => hash_file('sha256', $this->file->getRealPath()),
+            'total_rows' => $dataRowCount,
+        ]);
+
+        $import = new StudentsImport($institution, $importBatch);
         Excel::import($import, $this->file);
 
         $this->createdCount = $import->created;
@@ -110,6 +121,11 @@ class ImportStudents extends Component
             ->sortBy('row')
             ->values()
             ->all();
+
+        $importBatch->update([
+            'success_count' => $this->createdCount,
+            'error_count' => count($this->rowErrors),
+        ]);
 
         $this->reset('file');
 

@@ -226,6 +226,7 @@ class Index extends Component
         $institution = Institution::where('uuid', $uuid)->firstOrFail();
         $this->authorize('delete', $institution);
 
+        $institution->forceFill(['deleted_by' => auth()->id()])->save();
         $institution->delete();
         unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
