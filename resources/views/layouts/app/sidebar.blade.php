@@ -23,6 +23,14 @@
                     @endcan
                 </flux:sidebar.group>
 
+                @role('super_admin')
+                    <x-sidebar-nav-group :heading="__('Administración')" :items="[
+                        ['icon' => 'shield-check', 'route' => 'admin.users.index', 'current' => 'admin.users.*', 'label' => __('Usuarios internos')],
+                        ['icon' => 'user-group', 'route' => 'admin.roles.index', 'current' => 'admin.roles.*', 'label' => __('Roles')],
+                        ['icon' => 'key', 'route' => 'admin.permissions.index', 'current' => 'admin.permissions.*', 'label' => __('Permisos')],
+                    ]" />
+                @endrole
+
                 @role('institution_admin')
                     <x-sidebar-nav-group :heading="__('Mi institución')" :items="[
                         ['icon' => 'academic-cap', 'route' => 'actors.students.index', 'current' => 'actors.students.*', 'label' => __('Estudiantes')],
@@ -38,6 +46,12 @@
                         ['icon' => 'heart', 'route' => 'directory.guardians', 'current' => 'directory.guardians', 'label' => __('Acudientes')],
                     ]" />
                 @endcan
+
+                @hasanyrole('institution_admin|teacher')
+                    <x-sidebar-nav-group :heading="__('Alertas')" :items="[
+                        ['icon' => 'exclamation-triangle', 'route' => 'alerts.index', 'current' => 'alerts.*', 'label' => __('Alertas')],
+                    ]" />
+                @endhasanyrole
 
                 @canany(['complete-challenge', 'create-challenge', 'update-challenge', 'verify-challenge', 'view-challenge-statistics'])
                     <flux:sidebar.group :heading="__('Retos')" class="grid">

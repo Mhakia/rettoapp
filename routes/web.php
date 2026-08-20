@@ -12,6 +12,13 @@ use App\Livewire\Actors\StaffStudentsRoster;
 use App\Livewire\Actors\StaffTeachersRoster;
 use App\Livewire\Actors\StudentsRoster;
 use App\Livewire\Actors\TeachersRoster;
+use App\Livewire\Admin\CreateInternalUser;
+use App\Livewire\Admin\PermissionsIndex;
+use App\Livewire\Admin\RolePermissions;
+use App\Livewire\Admin\RolesIndex;
+use App\Livewire\Admin\UsersIndex;
+use App\Livewire\Alerts\CreateAlert;
+use App\Livewire\Alerts\Index as AlertsIndex;
 use App\Livewire\Challenges\Catalog;
 use App\Livewire\Challenges\Index as ChallengesIndex;
 use App\Livewire\Challenges\ManageChallenges;
@@ -28,6 +35,30 @@ Route::get('/', HomeController::class)
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
+
+    Route::livewire('admin/users', UsersIndex::class)
+        ->middleware('role:super_admin')
+        ->name('admin.users.index');
+
+    Route::livewire('admin/users/create', CreateInternalUser::class)
+        ->middleware('role:super_admin')
+        ->name('admin.users.create');
+
+    Route::livewire('admin/users/{user}/edit', CreateInternalUser::class)
+        ->middleware('role:super_admin')
+        ->name('admin.users.edit');
+
+    Route::livewire('admin/roles', RolesIndex::class)
+        ->middleware('role:super_admin')
+        ->name('admin.roles.index');
+
+    Route::livewire('admin/roles/{role}/permissions', RolePermissions::class)
+        ->middleware('role:super_admin')
+        ->name('admin.roles.permissions');
+
+    Route::livewire('admin/permissions', PermissionsIndex::class)
+        ->middleware('role:super_admin')
+        ->name('admin.permissions.index');
 
     Route::livewire('actors/students', StudentsRoster::class)
         ->middleware('role:institution_admin')
@@ -109,6 +140,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('challenges/statistics', Statistics::class)
         ->middleware('role:pedagogue|super_admin')
         ->name('challenges.statistics');
+
+    Route::livewire('alerts', AlertsIndex::class)
+        ->middleware('role:institution_admin|teacher')
+        ->name('alerts.index');
+
+    Route::livewire('alerts/create', CreateAlert::class)
+        ->middleware('role:institution_admin|teacher')
+        ->name('alerts.create');
 });
 
 require __DIR__.'/settings.php';
