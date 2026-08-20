@@ -1,6 +1,12 @@
 <x-layouts::app :title="__('Dashboard')">
     @if (auth()->user()->hasRole('institution_admin') && auth()->user()->institution_id)
         <livewire:dashboard.institution-dashboard />
+    @elseif (auth()->user()->hasAnyRole(['manager', 'pedagogue', 'super_admin']))
+        <livewire:dashboard.platform-dashboard />
+    @elseif (auth()->user()->hasRole('teacher'))
+        <livewire:dashboard.teacher-dashboard />
+    @elseif (auth()->user()->hasRole('guardian'))
+        <livewire:dashboard.guardian-dashboard />
     @else
         <div class="flex h-full w-full flex-1 flex-col gap-4 rounded-xl">
             <div class="grid auto-rows-min gap-4 md:grid-cols-3">
