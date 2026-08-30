@@ -110,4 +110,36 @@ class Institution extends Model
     {
         return $this->hasOne(User::class)->role('institution_admin');
     }
+
+    /**
+     * Full billing history for this institution (previous plans/contracts included).
+     */
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(InstitutionSubscription::class);
+    }
+
+    /**
+     * The single subscription currently in effect, if any.
+     */
+    public function activeSubscription(): HasOne
+    {
+        return $this->hasOne(InstitutionSubscription::class)->where('status', 'active');
+    }
+
+    /**
+     * Active memberships belonging to students, used as the billable count for
+     * per-student pricing.
+     */
+    public function activeStudentMemberships(): HasMany
+    {
+        return $this->hasMany(InstitutionMembership::class)
+            ->where('status', 'active')
+            ->whereHas('user', fn ($query) => $query->role('student'));
+    }
+
+    public function billableStudentCount(): int
+    {
+        return $this->activeStudentMemberships()->count();
+    }
 }
