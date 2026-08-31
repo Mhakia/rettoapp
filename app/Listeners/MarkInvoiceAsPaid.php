@@ -23,9 +23,12 @@ class MarkInvoiceAsPaid
             return;
         }
 
-        Invoice::where('stripe_invoice_id', $stripeInvoiceId)->update([
-            'status' => 'paid',
-            'paid_at' => now(),
-        ]);
+        Invoice::where('stripe_invoice_id', $stripeInvoiceId)
+            ->where('status', '!=', 'paid') // already paid for by another catwalk (e.g., Wompi won the race)
+            ->update([
+                'status' => 'paid',
+                'payment_method' => 'stripe',
+                'paid_at' => now(),
+            ]);
     }
 }

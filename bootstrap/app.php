@@ -22,6 +22,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+
+        // Stripe cannot send a valid CSRF token on its webhooks,
+        // so this route (automatically registered by Cashier) is excluded.
+        $middleware->preventRequestForgery(except: [
+            'stripe/*',
+            'webhooks/wompi',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

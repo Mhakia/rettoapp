@@ -37,4 +37,19 @@ return [
 
     'team_password' => env('TEAM_PASSWORD'),
 
+    'billing' => [
+        // Lista separada por comas de las pasarelas activas para facturación directa
+        // (todo lo que NO sea un convenio/Contract, que siempre es 'manual').
+        // Valores válidos: wompi, stripe. Por defecto: solo Wompi.
+        //   BILLING_GATEWAYS=wompi            -> solo Wompi (por defecto)
+        //   BILLING_GATEWAYS=stripe           -> solo Stripe
+        //   BILLING_GATEWAYS=wompi,stripe     -> ambas habilitadas a la vez
+        'gateways' => array_filter(explode(',', env('BILLING_GATEWAYS', 'wompi'))),
+    ],
+
+    'wompi' => [
+        'private_key' => env('WOMPI_PRIVATE_KEY'),
+        'events_secret' => env('WOMPI_EVENTS_SECRET'),
+    ],
+
 ];

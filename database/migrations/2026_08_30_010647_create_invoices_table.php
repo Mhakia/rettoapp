@@ -27,8 +27,9 @@ return new class extends Migration
             // How this invoice gets paid: 'stripe' routes through Cashier;
             // 'manual' covers convenios and any other out-of-band payment
             // (transferencia, orden de compra, etc.).
-            $table->string('payment_method')->default('manual');
+            $table->string('payment_method')->default('manual'); // wompi | stripe | manual (se sobreescribe con la real al confirmarse el pago)
             $table->string('stripe_invoice_id')->nullable()->unique();
+            $table->string('wompi_reference')->nullable()->unique();
             $table->string('status')->default('pending'); // pending | paid | overdue | cancelled
             $table->date('due_at');
             $table->timestamp('paid_at')->nullable();

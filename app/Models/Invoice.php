@@ -47,6 +47,7 @@ class Invoice extends Model
         'currency',
         'payment_method',
         'stripe_invoice_id',
+        'wompi_reference',
         'status',
         'due_at',
         'paid_at',
@@ -110,7 +111,12 @@ class Invoice extends Model
                 'subtotal' => 0,
                 'discount_amount' => 0,
                 'total' => 0,
-                'payment_method' => $subscription->contract_id ? 'manual' : 'stripe',
+                // Convenios (Contract) siempre se facturan manualmente, sin importar
+                // qué pasarelas estén habilitadas; el resto usa lo que diga la config,
+                // por defecto solo Wompi (ver config/services.php -> billing.gateways).
+                'payment_method' => $subscription->contract_id
+                    ? 'manual'
+                    : implode(',', config('services.billing.gateways', ['wompi'])),
                 'due_at' => now()->addDays($dueInDays),
             ]);
 
@@ -172,5 +178,21 @@ class Invoice extends Model
         $sequence = static::whereYear('created_at', $year)->count() + 1;
 
         return sprintf('INV-%d-%06d', $year, $sequence);
+    }
+
+    /**
+     * The gateway(s) offered for this invoice, as an array (e.g. ['wompi'],
+     * ['stripe'], or ['wompi', 'stripe'] when both are enabled). 'manual'
+     * (convenios) is never a real gateway, so it resolves to an empty array.
+     *
+     * @return array<int, string>
+     */
+    public function gateways(): array
+    {
+        if ($this->payment_method === 'manual') {
+            return [];
+        }
+
+        return explode(',', $this->payment_method);
     }
 }

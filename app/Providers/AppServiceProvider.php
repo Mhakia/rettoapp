@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Institution;
+use App\Services\Wompi\WompiClient;
+use App\Services\Wompi\WompiSignatureValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +19,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(WompiClient::class, fn () => new WompiClient(
+            privateKey: config('services.wompi.private_key'),
+        ));
+
+        $this->app->singleton(WompiSignatureValidator::class, fn () => new WompiSignatureValidator(
+            eventsSecret: config('services.wompi.events_secret'),
+        ));
     }
 
     /**

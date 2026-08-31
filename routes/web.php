@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\WompiWebhookController;
 use App\Livewire\Actors\CreateGuardian;
 use App\Livewire\Actors\CreateStudent;
 use App\Livewire\Actors\CreateTeacher;
@@ -149,5 +150,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:institution_admin|teacher')
         ->name('alerts.create');
 });
+
+// WEBHOOKS
+Route::post('/webhooks/wompi', WompiWebhookController::class)
+    ->middleware('throttle:30,1');
 
 require __DIR__.'/settings.php';

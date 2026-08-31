@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\InstitutionSubscription;
 use App\Models\Invoice;
+use App\Services\Wompi\WompiClient;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -16,6 +17,11 @@ class GenerateSubscriptionInvoicesCommand extends Command
 
     protected $description = 'Generate an invoice for every active subscription whose current billing period has ended.';
 
+    public function __construct(protected WompiClient $wompi)
+    {
+        parent::__construct();
+    }
+
     public function handle(): int
     {
         $subscriptions = InstitutionSubscription::query()
@@ -25,7 +31,7 @@ class GenerateSubscriptionInvoicesCommand extends Command
             ->filter->isDueForInvoicing();
 
         if ($subscriptions->isEmpty()) {
-            $this->info('No hay suscripciones pendientes de facturar hoy.');
+            $this->info(__('There are no subscriptions pending billing today.'));
 
             return self::SUCCESS;
         }
@@ -34,9 +40,11 @@ class GenerateSubscriptionInvoicesCommand extends Command
             [$start, $end] = $subscription->nextPeriod();
             $invoice = Invoice::generateFor($subscription, $start, $end);
 
-            if ($invoice->payment_method === 'stripe') {
-                $this->sendToStripe($invoice);
-            }
+            match ($invoice->payment_method) {
+                'stripe' => $this->sendToStripe($invoice),
+                'wompi' => $this->sendToWompi($invoice),
+                default => null, // manual: pending for the administrative team
+            };
 
             $this->info("Factura {$invoice->number} generada para {$subscription->institution->name}: {$invoice->total} {$invoice->currency}");
         }
@@ -61,5 +69,25 @@ class GenerateSubscriptionInvoicesCommand extends Command
         );
 
         $invoice->update(['stripe_invoice_id' => $stripeInvoice->id]);
+    }
+
+    /**
+     * Wompi has no invoice concept — instead we create a one-time Payment
+     * Link for the exact amount and store its id as `wompi_reference` so
+     * the webhook controller can match the later `transaction.updated`
+     * event back to this invoice.
+     */
+    protected function sendToWompi(Invoice $invoice): void
+    {
+        $link = $this->wompi->createPaymentLink(
+            name: $invoice->number,
+            description: "Suscripción {$invoice->institution->name} — {$invoice->period_start->format('M Y')}",
+            amountInCents: (int) round($invoice->total * 100),
+            currency: $invoice->currency,
+        );
+
+        $invoice->update(['wompi_reference' => $link['id']]);
+
+        // TODO: enviar $link['url'] a la institución (correo, notificación, etc.)
     }
 }
