@@ -1,6 +1,6 @@
-<x-layouts::auth :title="__('Reset password')">
+<x-layouts::auth :title="__('auth_reset_password_title')">
     <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Crea tu nueva contraseña')" :description="__('Escoge una contraseña segura para proteger tu cuenta. Solo tú la conocerás.')" />
+        <x-auth-header :title="__('auth_reset_password_title')" :description="__('auth_reset_password_description')" />
 
         <!-- Session Status -->
         <x-auth-session-status class="text-center" :status="session('status')" />
@@ -41,12 +41,12 @@
             <flux:input
                 name="password"
                 x-model="password"
-                :label="__('Nueva contraseña')"
+                :label="__('auth_new_password_label')"
                 type="password"
                 required
                 autofocus
                 autocomplete="new-password"
-                :placeholder="__('Escribe tu nueva contraseña')"
+                :placeholder="__('auth_new_password_placeholder')"
                 passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
                 viewable
             />
@@ -55,11 +55,11 @@
             <flux:input
                 name="password_confirmation"
                 x-model="confirmation"
-                :label="__('Confirma la contraseña')"
+                :label="__('auth_confirm_password_label')"
                 type="password"
                 required
                 autocomplete="new-password"
-                :placeholder="__('Escribe la misma contraseña otra vez')"
+                :placeholder="__('auth_confirm_password_placeholder')"
                 passwordrules="{{ \Illuminate\Validation\Rules\Password::defaults()->toPasswordRulesString() }}"
                 viewable
             />
@@ -69,32 +69,32 @@
                 <li class="flex items-center gap-2" :class="hasLength ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="hasLength" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!hasLength" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Mínimo 12 caracteres') }}
+                    {{ __('auth_password_requirements_min') }}
                 </li>
                 <li class="flex items-center gap-2" :class="hasUpper ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="hasUpper" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!hasUpper" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Una letra mayúscula') }}
+                    {{ __('auth_password_requirements_uppercase') }}
                 </li>
                 <li class="flex items-center gap-2" :class="hasLower ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="hasLower" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!hasLower" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Una letra minúscula') }}
+                    {{ __('auth_password_requirements_lowercase') }}
                 </li>
                 <li class="flex items-center gap-2" :class="hasNumber ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="hasNumber" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!hasNumber" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Un número') }}
+                    {{ __('auth_password_requirements_number') }}
                 </li>
                 <li class="flex items-center gap-2" :class="hasSymbol ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="hasSymbol" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!hasSymbol" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Un símbolo (ej. ! @ # $)') }}
+                    {{ __('auth_password_requirements_symbol') }}
                 </li>
                 <li class="flex items-center gap-2" :class="matches ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
                     <flux:icon x-show="matches" icon="check-circle" variant="micro" x-cloak />
                     <flux:icon x-show="!matches" icon="minus-circle" variant="micro" x-cloak />
-                    {{ __('Las dos contraseñas coinciden') }}
+                    {{ __('auth_password_requirements_match') }}
                 </li>
             </ul>
 
@@ -106,8 +106,8 @@
                     data-test="reset-password-button"
                     x-bind:disabled="submitting"
                 >
-                    <span x-show="!submitting">{{ __('Guardar contraseña e ingresar') }}</span>
-                    <span x-show="submitting" x-cloak>{{ __('Guardando...') }}</span>
+                    <span x-show="!submitting">{{ __('auth_save_password_button') }}</span>
+                    <span x-show="submitting" x-cloak>{{ __('auth_save_password_saving') }}</span>
                 </flux:button>
             </div>
         </form>

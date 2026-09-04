@@ -286,7 +286,7 @@ class ManageChallenges extends Component
     {
         $this->persist('draft');
 
-        Flux::toast(variant: 'success', text: __('Reto guardado como borrador.'));
+        Flux::toast(variant: 'success', text: __('challenge_draft_saved'));
         $this->redirectRoute('challenges.manage', navigate: true);
     }
 
@@ -294,7 +294,7 @@ class ManageChallenges extends Component
     {
         $this->persist('published');
 
-        Flux::toast(variant: 'success', text: __('Reto publicado.'));
+        Flux::toast(variant: 'success', text: __('challenge_published'));
         $this->redirectRoute('challenges.manage', navigate: true);
     }
 
@@ -362,8 +362,8 @@ class ManageChallenges extends Component
     protected function messages(): array
     {
         return [
-            'questions.required' => __('Agrega al menos una pregunta al reto.'),
-            'questions.min' => __('Agrega al menos una pregunta al reto.'),
+            'questions.required' => __('challenge_add_question'),
+            'questions.min' => __('challenge_add_question'),
         ];
     }
 
@@ -377,13 +377,13 @@ class ManageChallenges extends Component
         $totalPoints = collect($questions)->sum('points');
 
         if ($totalPoints > $this->points) {
-            $errors['points'] = [__('La suma de puntos de las preguntas (:total) supera el tope del reto (:cap).', ['total' => $totalPoints, 'cap' => $this->points])];
+            $errors['points'] = [__('challenge_points_exceed_cap', ['total' => $totalPoints, 'cap' => $this->points])];
         }
 
         foreach ($questions as $i => $question) {
             if ($question['answer_type'] !== 'choice') {
                 if (($question['scoring_mode'] ?? 'none') === 'automatic') {
-                    $errors["questions.$i.scoring_mode"] = [__('Una pregunta de evidencia no puede calificarse automáticamente; usa "Manual" o "Sin puntaje".')];
+                    $errors["questions.$i.scoring_mode"] = [__('challenge_evidence_no_auto_scoring')];
                 }
 
                 continue;
@@ -392,7 +392,7 @@ class ManageChallenges extends Component
             $options = $question['options'] ?? [];
 
             if (! in_array($question['answer_mode'] ?? null, ['single', 'multiple'], true)) {
-                $errors["questions.$i.answer_mode"] = [__('Selecciona si la pregunta es de respuesta única o múltiple.')];
+                $errors["questions.$i.answer_mode"] = [__('challenge_select_answer_mode')];
 
                 continue;
             }

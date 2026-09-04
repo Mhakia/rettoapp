@@ -97,7 +97,7 @@ class Catalog extends Component
 
         // A class-session login is scoped to one specific challenge: close it automatically once answered.
         if (session('locked_challenge_ulid') === $challenge->ulid) {
-            Flux::toast(variant: 'success', text: __('Reto enviado. ¡Listo!'));
+            Flux::toast(variant: 'success', text: __('challenge_submitted_success'));
 
             Auth::guard('web')->logout();
             Session::invalidate();
@@ -108,7 +108,7 @@ class Catalog extends Component
             return;
         }
 
-        Flux::toast(variant: 'success', text: __('Reto enviado.'));
+        Flux::toast(variant: 'success', text: __('challenge_submitted'));
     }
 
     public function logout(): void

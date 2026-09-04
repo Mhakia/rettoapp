@@ -62,7 +62,7 @@ class PlansIndex extends Component
     {
         $this->authorize('delete', $plan);
         $plan->delete();
-        Flux::toast()->success('Plan eliminado.');
+        Flux::toast()->success(__('billing_plan_deleted'));
     }
 
     public function closePlanForm(): void

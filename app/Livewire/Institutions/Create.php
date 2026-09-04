@@ -93,7 +93,7 @@ class Create extends Component
             $admin->notify(new InstitutionAdminAccountCreated);
         });
 
-        Flux::toast(variant: 'success', text: __('Institución creada. Se envió un correo de activación al administrador.'));
+        Flux::toast(variant: 'success', text: __('institution_created'));
 
         $this->redirectRoute('institutions.index', navigate: true);
     }

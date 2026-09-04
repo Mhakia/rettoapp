@@ -1,15 +1,15 @@
 <section class="mx-auto w-full max-w-6xl pb-16">
     <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div class="rounded-xl border border-teal-border bg-teal-bg px-6 py-5">
-            <flux:heading size="xl" class="text-teal-deep!">{{ __('Gestionar retos') }}</flux:heading>
+            <flux:heading size="xl" class="text-teal-deep!">{{ __('challenge_manage_title') }}</flux:heading>
             <flux:text class="text-brand-text-muted!">
-                {{ __('Consulta, busca y administra todos los retos de la plataforma.') }}
+                {{ __('challenge_manage_description') }}
             </flux:text>
         </div>
 
         @can('create-challenge')
             <flux:button variant="primary" icon="plus" class="bg-teal! hover:bg-teal-deep!" :href="route('challenges.manage.create')" wire:navigate>
-                {{ __('Crear reto') }}
+                {{ __('challenge_create_button') }}
             </flux:button>
         @endcan
     </div>
@@ -17,19 +17,19 @@
     <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <div class="text-2xl font-extrabold text-brand-text">{{ $this->stats['total'] }}</div>
-            <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Total') }}</div>
+            <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('challenge_stats_total') }}</div>
         </div>
         <div class="rounded-xl border border-teal-border bg-teal-bg p-4 text-center">
             <div class="text-2xl font-extrabold text-teal-deep">{{ $this->stats['published'] }}</div>
-            <div class="text-xs font-semibold text-teal-deep uppercase">{{ __('Publicados') }}</div>
+            <div class="text-xs font-semibold text-teal-deep uppercase">{{ __('challenge_stats_published') }}</div>
         </div>
         <div class="rounded-xl border border-zinc-200 bg-white p-4 text-center shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
             <div class="text-2xl font-extrabold text-brand-text">{{ $this->stats['draft'] }}</div>
-            <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Borradores') }}</div>
+            <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('challenge_stats_draft') }}</div>
         </div>
         <div class="rounded-xl border border-amber/30 bg-amber-bg p-4 text-center">
             <div class="text-2xl font-extrabold text-amber">{{ $this->stats['archived'] }}</div>
-            <div class="text-xs font-semibold text-amber uppercase">{{ __('Archivados') }}</div>
+            <div class="text-xs font-semibold text-amber uppercase">{{ __('challenge_stats_archived') }}</div>
         </div>
     </div>
 
@@ -49,25 +49,25 @@
     >
     <div class="rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <div class="flex flex-wrap items-center gap-3 border-b border-zinc-100 p-4 dark:border-zinc-800">
-            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por código, título o categoría...')" class="min-w-64 grow" />
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('challenge_search_placeholder')" class="min-w-64 grow" />
 
             <flux:select wire:model.live="roleFilter" class="w-44">
-                <flux:select.option value="">{{ __('Todos los roles') }}</flux:select.option>
-                <flux:select.option value="student">{{ __('Estudiante') }}</flux:select.option>
-                <flux:select.option value="teacher">{{ __('Profesor') }}</flux:select.option>
-                <flux:select.option value="guardian">{{ __('Acudiente') }}</flux:select.option>
+                <flux:select.option value="">{{ __('challenge_filter_all_roles') }}</flux:select.option>
+                <flux:select.option value="student">{{ __('challenge_role_student') }}</flux:select.option>
+                <flux:select.option value="teacher">{{ __('challenge_role_teacher') }}</flux:select.option>
+                <flux:select.option value="guardian">{{ __('challenge_role_guardian') }}</flux:select.option>
             </flux:select>
 
             <flux:select wire:model.live="statusFilter" class="w-44">
-                <flux:select.option value="">{{ __('Todos los estados') }}</flux:select.option>
-                <flux:select.option value="draft">{{ __('Borrador') }}</flux:select.option>
-                <flux:select.option value="published">{{ __('Publicado') }}</flux:select.option>
-                <flux:select.option value="archived">{{ __('Archivado') }}</flux:select.option>
+                <flux:select.option value="">{{ __('challenge_filter_all_statuses') }}</flux:select.option>
+                <flux:select.option value="draft">{{ __('challenge_status_draft') }}</flux:select.option>
+                <flux:select.option value="published">{{ __('challenge_status_published') }}</flux:select.option>
+                <flux:select.option value="archived">{{ __('challenge_status_archived') }}</flux:select.option>
             </flux:select>
 
             @if ($search !== '' || $roleFilter !== '' || $statusFilter !== '')
                 <flux:button size="sm" variant="ghost" icon="x-mark" wire:click="$set('search', ''); $set('roleFilter', ''); $set('statusFilter', '')">
-                    {{ __('Limpiar filtros') }}
+                    {{ __('challenge_clear_filters') }}
                 </flux:button>
             @endif
         </div>
@@ -76,15 +76,15 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b border-zinc-100 text-left text-xs font-semibold text-brand-text-muted uppercase dark:border-zinc-800">
-                        <th class="px-4 py-3">{{ __('Código') }}</th>
-                        <th class="px-4 py-3">{{ __('Reto') }}</th>
-                        <th class="px-4 py-3">{{ __('Dirigido a') }}</th>
-                        <th class="px-4 py-3">{{ __('Estado') }}</th>
-                        <th class="px-4 py-3">{{ __('Dificultad') }}</th>
-                        <th class="px-4 py-3 text-center">{{ __('Puntos') }}</th>
-                        <th class="px-4 py-3 text-center">{{ __('Preguntas') }}</th>
-                        <th class="px-4 py-3">{{ __('Instituciones') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Acciones') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_code') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_challenge') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_target') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_status') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_difficulty') }}</th>
+                        <th class="px-4 py-3 text-center">{{ __('challenge_table_points') }}</th>
+                        <th class="px-4 py-3 text-center">{{ __('challenge_table_questions') }}</th>
+                        <th class="px-4 py-3">{{ __('challenge_table_institutions') }}</th>
+                        <th class="px-4 py-3 text-right">{{ __('challenge_table_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -145,17 +145,17 @@
                                 <flux:badge size="sm" variant="pill">{{ $challenge->questions_count }}</flux:badge>
                             </td>
                             <td class="px-4 py-3 text-xs text-brand-text-muted!">
-                                {{ $challenge->institutions->isEmpty() ? __('Todas') : $challenge->institutions->pluck('name')->join(', ') }}
+                                {{ $challenge->institutions->isEmpty() ? __('challenge_institutions_all') : $challenge->institutions->pluck('name')->join(', ') }}
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex justify-end gap-1.5">
-                                    <flux:button size="sm" icon="eye" :tooltip="__('Ver detalle')" x-on:click="show('{{ $challenge->ulid }}')" />
+                                    <flux:button size="sm" icon="eye" :tooltip="__('challenge_view_detail')" x-on:click="show('{{ $challenge->ulid }}')" />
 
                                     @can('update-challenge')
-                                        <flux:button size="sm" icon="pencil-square" :tooltip="__('Editar')" :href="route('challenges.manage.edit', $challenge->ulid)" wire:navigate />
+                                        <flux:button size="sm" icon="pencil-square" :tooltip="__('challenge_edit_action')" :href="route('challenges.manage.edit', $challenge->ulid)" wire:navigate />
 
                                         @if ($challenge->status !== 'archived')
-                                            <flux:button size="sm" icon="archive-box" :tooltip="__('Archivar')" wire:click="archive('{{ $challenge->ulid }}')" wire:confirm="{{ __('¿Archivar este reto?') }}" />
+                                            <flux:button size="sm" icon="archive-box" :tooltip="__('challenge_archive_action')" wire:click="archive('{{ $challenge->ulid }}')" wire:confirm="{{ __('challenge_archive_confirm') }}" />
                                         @endif
                                     @endcan
                                 </div>
@@ -164,7 +164,7 @@
                     @empty
                         <tr>
                             <td colspan="9" class="px-4 py-10 text-center text-brand-text-muted!">
-                                {{ __('No se encontraron retos con esos criterios.') }}
+                                {{ __('challenge_no_results') }}
                             </td>
                         </tr>
                     @endforelse
@@ -195,7 +195,7 @@
 
                 <div class="grid grid-cols-2 gap-3 rounded-lg bg-zinc-50 p-4 text-sm sm:grid-cols-3 dark:bg-zinc-800/50">
                     <div>
-                        <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('Dirigido a') }}</div>
+                        <div class="text-xs font-semibold text-brand-text-muted uppercase">{{ __('challenge_table_target') }}</div>
                         <div class="font-medium text-brand-text" x-text="roleLabels[selected.target_role]"></div>
                     </div>
                     <div>

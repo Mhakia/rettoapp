@@ -1,13 +1,13 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading class="sr-only">{{ __('Security settings') }}</flux:heading>
+    <flux:heading class="sr-only">{{ __('settings_security_title') }}</flux:heading>
 
-    <x-settings.layout :heading="__('Update password')" :subheading="__('Ensure your account is using a long, random password to stay secure')">
+    <x-settings.layout :heading="__('settings_security_title')" :subheading="__('settings_security_description')">
         <form method="POST" wire:submit="updatePassword" class="mt-6 space-y-6">
             <flux:input
                 wire:model="current_password"
-                :label="__('Current password')"
+                :label="__('field_current_password')"
                 type="password"
                 required
                 autocomplete="current-password"
@@ -15,7 +15,7 @@
             />
             <flux:input
                 wire:model="password"
-                :label="__('New password')"
+                :label="__('field_new_password')"
                 type="password"
                 required
                 autocomplete="new-password"
@@ -24,7 +24,7 @@
             />
             <flux:input
                 wire:model="password_confirmation"
-                :label="__('Confirm password')"
+                :label="__('field_confirm_password')"
                 type="password"
                 required
                 autocomplete="new-password"
@@ -33,20 +33,20 @@
             />
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit" data-test="update-password-button">{{ __('Save') }}</flux:button>
+                <flux:button variant="primary" type="submit" data-test="update-password-button">{{ __('action_save') }}</flux:button>
             </div>
         </form>
 
         @if ($canManageTwoFactor)
             <section class="mt-12">
-                <flux:heading>{{ __('Two-factor authentication') }}</flux:heading>
-                <flux:subheading>{{ __('Manage your two-factor authentication settings') }}</flux:subheading>
+                <flux:heading>{{ __('settings_two_factor_title') }}</flux:heading>
+                <flux:subheading>{{ __('settings_two_factor_description') }}</flux:subheading>
 
                 <div class="flex flex-col w-full mx-auto space-y-6 text-sm" wire:cloak>
                     @if ($twoFactorEnabled)
                         <div class="space-y-4">
                             <flux:text>
-                                {{ __('You will be prompted for a secure, random pin during login, which you can retrieve from the TOTP-supported application on your phone.') }}
+                                {{ __('settings_two_factor_enabled_text') }}
                             </flux:text>
 
                             <div class="flex justify-start">
@@ -54,7 +54,7 @@
                                     variant="danger"
                                     wire:click="disable"
                                 >
-                                    {{ __('Disable 2FA') }}
+                                    {{ __('settings_two_factor_disable_button') }}
                                 </flux:button>
                             </div>
 
@@ -63,14 +63,14 @@
                     @else
                         <div class="space-y-4">
                             <flux:text variant="subtle">
-                                {{ __('When you enable two-factor authentication, you will be prompted for a secure pin during login. This pin can be retrieved from a TOTP-supported application on your phone.') }}
+                                {{ __('settings_two_factor_disabled_text') }}
                             </flux:text>
 
                             <flux:button
                                 variant="primary"
                                 wire:click="enable"
                             >
-                                {{ __('Enable 2FA') }}
+                                {{ __('settings_two_factor_enable_button') }}
                             </flux:button>
                         </div>
                     @endif

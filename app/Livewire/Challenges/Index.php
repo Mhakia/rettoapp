@@ -45,7 +45,7 @@ class Index extends Component
 
         unset($this->challenges, $this->challengeDetails, $this->challengesCacheKey, $this->stats);
 
-        Flux::toast(variant: 'success', text: __('Reto archivado.'));
+        Flux::toast(variant: 'success', text: __('challenge_archived'));
     }
 
     /**

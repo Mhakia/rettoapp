@@ -1,22 +1,22 @@
 <section class="w-full">
     @include('partials.settings-heading')
 
-    <flux:heading class="sr-only">{{ __('Profile settings') }}</flux:heading>
+    <flux:heading class="sr-only">{{ __('settings_profile_title') }}</flux:heading>
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
+    <x-settings.layout :heading="__('settings_profile_title')" :subheading="__('settings_profile_description')">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
+            <flux:input wire:model="name" :label="__('field_name')" type="text" required autofocus autocomplete="name" />
 
             <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
+                <flux:input wire:model="email" :label="__('field_email')" type="email" required autocomplete="email" />
 
                 @if ($this->hasUnverifiedEmail)
                     <div>
                         <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
+                            {{ __('settings_email_unverified') }}
 
                             <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
+                                {{ __('settings_email_resend_link') }}
                             </flux:link>
                         </flux:text>
 
@@ -25,7 +25,7 @@
             </div>
 
             <div class="flex items-center gap-4">
-                <flux:button variant="primary" type="submit">{{ __('Save') }}</flux:button>
+                <flux:button variant="primary" type="submit">{{ __('action_save') }}</flux:button>
             </div>
         </form>
 

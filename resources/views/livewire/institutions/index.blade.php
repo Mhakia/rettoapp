@@ -1,27 +1,27 @@
 <section class="w-full">
     <div class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-teal-border bg-teal-bg px-6 py-5">
         <div>
-            <flux:heading size="xl" class="text-teal-deep!">{{ __('Instituciones') }}</flux:heading>
-            <flux:text class="text-brand-text-muted!">{{ __('Listado de instituciones registradas en la plataforma.') }}</flux:text>
+            <flux:heading size="xl" class="text-teal-deep!">{{ __('institution_management_title') }}</flux:heading>
+            <flux:text class="text-brand-text-muted!">{{ __('institution_management_description') }}</flux:text>
         </div>
 
         @can('create', \App\Models\Institution::class)
-            <flux:button variant="primary" icon="plus" class="bg-teal! hover:bg-teal-deep!" href="{{ route('institutions.create') }}" wire:navigate>{{ __('Crear institución') }}</flux:button>
+            <flux:button variant="primary" icon="plus" class="bg-teal! hover:bg-teal-deep!" href="{{ route('institutions.create') }}" wire:navigate>{{ __('institution_create_button') }}</flux:button>
         @endcan
     </div>
 
-    <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('Buscar por nombre o NIT...')" class="mb-6 max-w-md" />
+    <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass" :placeholder="__('institutions_search_placeholder')" class="mb-6 max-w-md" />
 
     @if ($editingUuid)
         <div class="mb-6 space-y-4 rounded-xl border border-teal-border bg-white p-6 shadow-sm dark:bg-zinc-900">
-            <flux:heading size="sm" class="text-teal-deep!">{{ __('Editar institución') }}</flux:heading>
+            <flux:heading size="sm" class="text-teal-deep!">{{ __('institution_edit_title') }}</flux:heading>
 
             <form wire:submit="save" class="space-y-6">
                 @include('livewire.institutions._form-fields')
 
                 <div class="flex gap-2">
-                    <flux:button variant="primary" type="submit" class="bg-teal! hover:bg-teal-deep!">{{ __('Guardar') }}</flux:button>
-                    <flux:button wire:click="$set('editingUuid', null)">{{ __('Cancelar') }}</flux:button>
+                    <flux:button variant="primary" type="submit" class="bg-teal! hover:bg-teal-deep!">{{ __('action_save') }}</flux:button>
+                    <flux:button wire:click="$set('editingUuid', null)">{{ __('action_cancel') }}</flux:button>
                 </div>
             </form>
         </div>
@@ -29,15 +29,15 @@
 
     @if ($assigningUuid)
         <div class="mb-6 space-y-4 rounded-xl border border-amber/30 bg-amber-bg p-6">
-            <flux:heading size="sm" class="text-brand-text!">{{ __('Asignar administrador') }}</flux:heading>
+            <flux:heading size="sm" class="text-brand-text!">{{ __('institution_assign_admin') }}</flux:heading>
 
             <form wire:submit="saveAdmin" class="space-y-4">
-                <flux:input wire:model="admin_name" :label="__('Nombre')" />
-                <flux:input wire:model="admin_email" type="email" :label="__('Correo')" />
+                <flux:input wire:model="admin_name" :label="__('field_name')" />
+                <flux:input wire:model="admin_email" type="email" :label="__('field_email')" />
 
                 <div class="flex gap-2">
-                    <flux:button variant="primary" type="submit" class="bg-teal! hover:bg-teal-deep!">{{ __('Asignar') }}</flux:button>
-                    <flux:button wire:click="$set('assigningUuid', null)">{{ __('Cancelar') }}</flux:button>
+                    <flux:button variant="primary" type="submit" class="bg-teal! hover:bg-teal-deep!">{{ __('institution_assign_admin') }}</flux:button>
+                    <flux:button wire:click="$set('assigningUuid', null)">{{ __('action_cancel') }}</flux:button>
                 </div>
             </form>
         </div>
@@ -62,7 +62,7 @@
                             <flux:heading size="lg" class="text-teal-deep! hover:underline dark:text-teal!">{{ $institution->name }}</flux:heading>
                         </button>
                         <flux:text class="text-sm text-brand-text-muted!">
-                            {{ $institution->nit ?? __('Sin NIT') }} · {{ $institution->address ?? __('Sin dirección') }}
+                            {{ $institution->nit ?? __('institution_without_nit') }} · {{ $institution->address ?? __('institution_without_address') }}
                         </flux:text>
                         @if ($institution->phone)
                             <flux:text class="text-sm text-brand-text-muted!">{{ $institution->phone }}</flux:text>

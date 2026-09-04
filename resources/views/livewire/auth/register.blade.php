@@ -27,7 +27,7 @@
                 type="email"
                 required
                 autocomplete="email"
-                placeholder="email@example.com"
+                :placeholder="__('auth_email_placeholder')"
             />
 
             <!-- Password -->

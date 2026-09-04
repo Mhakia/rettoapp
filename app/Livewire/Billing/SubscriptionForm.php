@@ -101,7 +101,7 @@ class SubscriptionForm extends Component
                 'discount_type' => $data['discountType'],
                 'discount_value' => $data['discountValue'],
             ]);
-            Flux::toast()->success('Suscripción actualizada.');
+            Flux::toast()->success(__('billing_subscription_updated'));
         } else {
             InstitutionSubscription::create([
                 'institution_id' => $data['institutionId'],
@@ -116,7 +116,7 @@ class SubscriptionForm extends Component
                 'discount_value' => $data['discountValue'],
                 'started_at' => now(),
             ]);
-            Flux::toast()->success('Suscripción creada.');
+            Flux::toast()->success(__('billing_subscription_created'));
         }
 
         $this->dispatch('subscription-saved');

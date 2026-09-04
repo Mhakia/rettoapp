@@ -1,15 +1,15 @@
 <section class="w-full space-y-8">
-    <flux:heading size="lg">{{ __('Estadísticas de retos') }}</flux:heading>
+    <flux:heading size="lg">{{ __('challenge_stats_title') }}</flux:heading>
 
     <div>
-        <flux:heading size="sm">{{ __('Por reto') }}</flux:heading>
+        <flux:heading size="sm">{{ __('challenge_stats_by_challenge') }}</flux:heading>
         <table class="mt-4 w-full text-sm">
             <thead>
                 <tr class="text-left text-gray-500">
-                    <th class="py-2">{{ __('Reto') }}</th>
-                    <th>{{ __('Enviados') }}</th>
-                    <th>{{ __('Verificados') }}</th>
-                    <th>{{ __('Rechazados') }}</th>
+                    <th class="py-2">{{ __('challenge_table_challenge') }}</th>
+                    <th>{{ __('challenge_stats_submitted') }}</th>
+                    <th>{{ __('challenge_stats_verified') }}</th>
+                    <th>{{ __('challenge_stats_rejected') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,7 +26,7 @@
     </div>
 
     <div>
-        <flux:heading size="sm">{{ __('Por institución') }}</flux:heading>
+        <flux:heading size="sm">{{ __('challenge_stats_by_institution') }}</flux:heading>
         <div class="mt-4 space-y-2">
             @foreach ($this->byInstitution as $institution => $rows)
                 <flux:text class="font-medium">{{ $institution }}</flux:text>
@@ -40,7 +40,7 @@
     </div>
 
     <div>
-        <flux:heading size="sm">{{ __('Por rol objetivo') }}</flux:heading>
+        <flux:heading size="sm">{{ __('challenge_stats_by_role') }}</flux:heading>
         <div class="mt-4 space-y-2">
             @foreach ($this->byTargetRole as $role => $rows)
                 <flux:text class="font-medium">{{ $role }}</flux:text>

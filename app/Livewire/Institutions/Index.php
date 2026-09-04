@@ -218,7 +218,7 @@ class Index extends Component
         ]);
         unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
-        Flux::toast(variant: 'success', text: __('Institución actualizada.'));
+        Flux::toast(variant: 'success', text: __('institution_updated'));
     }
 
     public function delete(string $uuid): void
@@ -230,7 +230,7 @@ class Index extends Component
         $institution->delete();
         unset($this->institutions, $this->institutionsCacheKey, $this->institutionDetails);
 
-        Flux::toast(variant: 'success', text: __('Institución eliminada.'));
+        Flux::toast(variant: 'success', text: __('institution_deleted'));
     }
 
     public function assign(string $uuid): void

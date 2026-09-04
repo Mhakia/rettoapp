@@ -76,7 +76,7 @@ class PlanForm extends Component
                 'billing_cycle' => $data['billingCycle'],
                 'features' => $data['features'],
             ]);
-            Flux::toast()->success('Plan actualizado.');
+            Flux::toast()->success(__('billing_plan_updated'));
         } else {
             Plan::create([
                 'name' => $data['name'],
@@ -88,7 +88,7 @@ class PlanForm extends Component
                 'billing_cycle' => $data['billingCycle'],
                 'features' => $data['features'],
             ]);
-            Flux::toast()->success('Plan creado.');
+            Flux::toast()->success(__('billing_plan_created'));
         }
 
         $this->dispatch('plan-saved');

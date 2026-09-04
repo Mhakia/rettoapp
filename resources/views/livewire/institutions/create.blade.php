@@ -1,13 +1,13 @@
 <section class="mx-auto w-full max-w-4xl pb-28">
     <div class="mb-8">
         <flux:button variant="ghost" size="sm" icon="arrow-left" href="{{ route('institutions.index') }}" wire:navigate class="mb-4">
-            {{ __('Volver a instituciones') }}
+            {{ __('institution_back_to_list') }}
         </flux:button>
 
         <div class="rounded-xl border border-teal-border bg-teal-bg px-6 py-5">
-            <flux:heading size="xl" class="text-teal-deep!">{{ __('Crear institución') }}</flux:heading>
+            <flux:heading size="xl" class="text-teal-deep!">{{ __('institution_create_page_title') }}</flux:heading>
             <flux:text class="text-brand-text-muted!">
-                {{ __('Registra los datos de la nueva institución y de la persona que la administrará en la plataforma.') }}
+                {{ __('institution_create_description') }}
             </flux:text>
         </div>
     </div>
@@ -19,30 +19,30 @@
                     <flux:icon icon="building-office-2" variant="micro" class="size-5" />
                 </span>
                 <div>
-                    <flux:heading size="lg">{{ __('Datos generales') }}</flux:heading>
-                    <flux:text class="text-sm text-brand-text-muted!">{{ __('Identificación y ubicación de la institución.') }}</flux:text>
+                    <flux:heading size="lg">{{ __('institution_general_data_section') }}</flux:heading>
+                    <flux:text class="text-sm text-brand-text-muted!">{{ __('institution_general_data_description') }}</flux:text>
                 </div>
             </div>
 
             <div class="space-y-4">
                 <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
                     <flux:input wire:model="name" :label="__('Nombre de la institución')" />
-                    <flux:input wire:model="nit" :label="__('NIT')" />
+                    <flux:input wire:model="nit" :label="__('field_nit')" />
                 </div>
                 <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
-                    <flux:input wire:model="address" :label="__('Dirección')" />
-                    <flux:input wire:model="phone" :label="__('Teléfono')" />
+                    <flux:input wire:model="address" :label="__('field_address')" />
+                    <flux:input wire:model="phone" :label="__('field_phone')" />
                 </div>
                 <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-3">
-                    <flux:input wire:model="country" :label="__('País')" />
-                    <flux:input wire:model="state" :label="__('Departamento o estado')" />
-                    <flux:input wire:model="city" :label="__('Ciudad')" />
+                    <flux:input wire:model="country" :label="__('field_country')" />
+                    <flux:input wire:model="state" :label="__('field_state')" />
+                    <flux:input wire:model="city" :label="__('field_city')" />
                 </div>
                 <div class="grid grid-cols-1 items-start gap-4 sm:grid-cols-2">
-                    <flux:select wire:model="entity_type" :label="__('Tipo de entidad educativa')">
-                        <flux:select.option value="">{{ __('Selecciona...') }}</flux:select.option>
-                        <flux:select.option value="public">{{ __('Pública') }}</flux:select.option>
-                        <flux:select.option value="private">{{ __('Privada') }}</flux:select.option>
+                    <flux:select wire:model="entity_type" :label="__('field_entity_type')">
+                        <flux:select.option value="">{{ __('institution_select_placeholder') }}</flux:select.option>
+                        <flux:select.option value="public">{{ __('institution_entity_public') }}</flux:select.option>
+                        <flux:select.option value="private">{{ __('institution_entity_private') }}</flux:select.option>
                     </flux:select>
                     <flux:select wire:model="bulletin_frequency" :label="__('Frecuencia de boletines')">
                         <flux:select.option value="weekly">{{ __('Semanal') }}</flux:select.option>

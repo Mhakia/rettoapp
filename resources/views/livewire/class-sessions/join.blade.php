@@ -14,7 +14,7 @@
         <form wire:submit="submitCode" class="flex w-full max-w-xs flex-col items-center gap-4">
             <flux:input
                 wire:model="code"
-                placeholder="ABC123"
+                :placeholder="__('class_session_code_placeholder')"
                 autofocus
                 autocomplete="off"
                 maxlength="10"
