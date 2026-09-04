@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\InstitutionSubscription;
 use App\Models\Invoice;
+use App\Notifications\PaymentLinkReady;
 use App\Services\Wompi\WompiClient;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -88,6 +89,7 @@ class GenerateSubscriptionInvoicesCommand extends Command
 
         $invoice->update(['wompi_reference' => $link['id']]);
 
-        // TODO: enviar $link['url'] a la institución (correo, notificación, etc.)
+        // Send payment link to institution's contact email
+        $invoice->institution->notify(new PaymentLinkReady($invoice));
     }
 }

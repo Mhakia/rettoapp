@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Validator;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -200,5 +202,32 @@ class InstitutionSubscription extends Model
             'fixed' => max(0, $amount - (float) $this->discount_value),
             default => $amount,
         };
+    }
+
+    /**
+     * Ensure only one active subscription per institution.
+     * The unique index enforces this at the database level, but this validation
+     * catches it earlier for better error messages.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $subscription) {
+            if ($subscription->status === 'active') {
+                $existingActive = self::query()
+                    ->where('institution_id', $subscription->institution_id)
+                    ->where('status', 'active')
+                    ->where('id', '!=', $subscription->id ?? 0)
+                    ->exists();
+
+                if ($existingActive) {
+                    throw new ValidationException(
+                        Validator::make([], [])->errors()->add(
+                            'status',
+                            __('Esta institución ya tiene una suscripción activa. Finaliza la actual antes de crear una nueva.'),
+                        )
+                    );
+                }
+            }
+        });
     }
 }

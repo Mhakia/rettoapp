@@ -20,6 +20,9 @@ use App\Livewire\Admin\RolesIndex;
 use App\Livewire\Admin\UsersIndex;
 use App\Livewire\Alerts\CreateAlert;
 use App\Livewire\Alerts\Index as AlertsIndex;
+use App\Livewire\Billing\InvoicesIndex;
+use App\Livewire\Billing\PlansIndex;
+use App\Livewire\Billing\SubscriptionsIndex;
 use App\Livewire\Challenges\Catalog;
 use App\Livewire\Challenges\Index as ChallengesIndex;
 use App\Livewire\Challenges\ManageChallenges;
@@ -66,6 +69,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('admin/permissions', PermissionsIndex::class)
         ->middleware('role:super_admin')
         ->name('admin.permissions.index');
+
+    Route::livewire('billing/plans', PlansIndex::class)
+        ->middleware('role:super_admin')
+        ->name('billing.plans.index');
+
+    Route::livewire('billing/subscriptions', SubscriptionsIndex::class)
+        ->middleware('role:super_admin')
+        ->name('billing.subscriptions.index');
+
+    Route::livewire('billing/invoices', InvoicesIndex::class)
+        ->middleware('role:super_admin')
+        ->name('billing.invoices.index');
 
     Route::livewire('actors/students', StudentsRoster::class)
         ->middleware('role:institution_admin')

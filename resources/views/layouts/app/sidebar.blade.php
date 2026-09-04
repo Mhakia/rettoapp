@@ -29,6 +29,12 @@
                         ['icon' => 'user-group', 'route' => 'admin.roles.index', 'current' => 'admin.roles.*', 'label' => __('Roles')],
                         ['icon' => 'key', 'route' => 'admin.permissions.index', 'current' => 'admin.permissions.*', 'label' => __('Permisos')],
                     ]" />
+
+                    <x-sidebar-nav-group :heading="__('Facturación')" :items="[
+                        ['icon' => 'document-text', 'route' => 'billing.plans.index', 'current' => 'billing.plans.*', 'label' => __('Planes')],
+                        ['icon' => 'credit-card', 'route' => 'billing.subscriptions.index', 'current' => 'billing.subscriptions.*', 'label' => __('Suscripciones')],
+                        ['icon' => 'receipt-refund', 'route' => 'billing.invoices.index', 'current' => 'billing.invoices.*', 'label' => __('Facturas')],
+                    ]" />
                 @endrole
 
                 @role('institution_admin')

@@ -9,13 +9,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 class Institution extends Model
 {
-    use Billable, HasFactory, HasUuids, LogsActivity, SoftDeletes;
+    use Billable, HasFactory, HasUuids, LogsActivity, Notifiable, SoftDeletes;
 
     /**
      * Document types accepted for the institution's contact and principal.
@@ -72,6 +73,14 @@ class Institution extends Model
             ->logOnly($this->fillable)
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    /**
+     * Route mail notifications to the institution's contact email.
+     */
+    public function routeNotificationForMail(): string
+    {
+        return $this->contact_email;
     }
 
     protected function casts(): array
