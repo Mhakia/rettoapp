@@ -17,9 +17,15 @@
             </div>
         </div>
 
-        <flux:button variant="primary" icon="check-badge" class="bg-teal! hover:bg-teal-deep!" href="{{ route('challenges.verify') }}" wire:navigate>
-            {{ __('Verificar retos') }}
-        </flux:button>
+        <div class="flex gap-2">
+            <flux:button variant="ghost" icon="qr-code" href="{{ route('class-sessions.index') }}" wire:navigate>
+                {{ __('Sesiones de retos') }}
+            </flux:button>
+
+            <flux:button variant="primary" icon="check-badge" class="bg-teal! hover:bg-teal-deep!" href="{{ route('challenges.verify') }}" wire:navigate>
+                {{ __('Verificar retos') }}
+            </flux:button>
+        </div>
     </div>
 
     {{-- KPI cards --}}

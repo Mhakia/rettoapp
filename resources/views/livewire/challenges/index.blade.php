@@ -247,10 +247,11 @@
                                     <div>
                                         <flux:text class="mb-2 text-xs text-brand-text-muted!">
                                             <span x-text="question.answer_mode === 'single' ? '{{ __('Opción única') }}' : ('{{ __('Opción múltiple · mínimo') }} ' + question.min_selections + ' {{ __('correctas') }}')"></span>
-                                            <span x-show="!question.is_scored"> · {{ __('sin puntaje') }}</span>
+                                            <span x-show="question.scoring_mode === 'manual'"> · {{ __('calificación manual') }}</span>
+                                            <span x-show="question.scoring_mode === 'none'"> · {{ __('sin puntaje') }}</span>
                                         </flux:text>
 
-                                        <ul class="space-y-1">
+                                        <ul class="space-y-1" x-show="question.scoring_mode === 'automatic'">
                                             <template x-for="option in question.options" :key="option.label">
                                                 <li class="flex items-center gap-2 text-sm">
                                                     <flux:icon icon="check-circle" variant="micro" class="size-4 shrink-0 text-teal-deep" x-show="option.is_correct" />
@@ -259,12 +260,19 @@
                                                 </li>
                                             </template>
                                         </ul>
+
+                                        <ul class="space-y-1" x-show="question.scoring_mode !== 'automatic'">
+                                            <template x-for="option in question.options" :key="option.label">
+                                                <li class="flex items-center gap-2 text-sm text-brand-text-muted" x-text="option.label"></li>
+                                            </template>
+                                        </ul>
                                     </div>
                                 </template>
 
                                 <template x-if="question.answer_type !== 'choice'">
                                     <flux:text class="text-xs text-brand-text-muted!">
                                         {{ __('Requiere evidencia adjunta (foto, documento, PDF, etc.) y verificación manual.') }}
+                                        <span x-show="question.scoring_mode === 'none'"> {{ __('No otorga puntos.') }}</span>
                                     </flux:text>
                                 </template>
                             </div>

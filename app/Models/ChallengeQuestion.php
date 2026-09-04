@@ -17,14 +17,13 @@ class ChallengeQuestion extends Model
         'answer_type',
         'answer_mode',
         'min_selections',
-        'is_scored',
+        'scoring_mode',
         'auto_verify',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_scored' => 'boolean',
             'auto_verify' => 'boolean',
         ];
     }
@@ -44,6 +43,17 @@ class ChallengeQuestion extends Model
                         'min_selections' => 'El mínimo de selecciones obligatorias debe estar entre 1 y 3.',
                     ]);
                 }
+            }
+
+            if ($question->answer_type === 'evidence' && $question->scoring_mode === 'automatic') {
+                throw ValidationException::withMessages([
+                    'scoring_mode' => 'Una pregunta de evidencia no puede calificarse automáticamente.',
+                ]);
+            }
+
+            // Manual scoring means a teacher always decides; auto-verify makes no sense for it.
+            if ($question->scoring_mode === 'manual') {
+                $question->auto_verify = false;
             }
 
             $cap = $question->challenge->remainingPoints($question->id);
@@ -95,7 +105,7 @@ class ChallengeQuestion extends Model
      */
     public function isSelectionCorrect(array $selectedOptionIds): bool
     {
-        if ($this->answer_type !== 'choice' || ! $this->is_scored) {
+        if ($this->answer_type !== 'choice' || $this->scoring_mode !== 'automatic') {
             return false;
         }
 

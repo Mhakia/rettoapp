@@ -21,7 +21,9 @@ class ChallengeCompletion extends Model
         'status',
         'evidence_path',
         'points_earned',
+        'started_at',
         'submitted_at',
+        'origin',
         'verified_by',
         'verified_at',
     ];
@@ -37,6 +39,7 @@ class ChallengeCompletion extends Model
     protected function casts(): array
     {
         return [
+            'started_at' => 'datetime',
             'submitted_at' => 'datetime',
             'verified_at' => 'datetime',
         ];

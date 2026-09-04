@@ -23,5 +23,10 @@
     "register_confirm_password": "Confirm password",
     "register_submit": "Create account",
     "register_have_account": "Already have an account?",
-    "register_login_link": "Log in"
+    "register_login_link": "Log in",
+    "class_code": "Class code",
+    "group_tap_to_enter": "Group :group — tap your name to enter.",
+    "enter_teacher_code": "Enter the code your teacher wrote on the board.",
+    "enter_button": "Enter",
+    "go_to_my_challenges": "Go to My Challenges"
 }

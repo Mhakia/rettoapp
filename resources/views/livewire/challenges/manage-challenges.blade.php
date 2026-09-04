@@ -149,8 +149,18 @@
                                     <flux:radio value="evidence" :label="__('Evidencia')" />
                                 </flux:radio.group>
 
-                                <flux:checkbox wire:model="questions.{{ $i }}.is_scored" :label="__('Otorga puntos (tiene respuesta correcta)')" />
+                                <flux:radio.group wire:model.live="questions.{{ $i }}.scoring_mode" :label="__('Calificación')" variant="segmented">
+                                    @if ($question['answer_type'] === 'choice')
+                                        <flux:radio value="automatic" :label="__('Automática')" />
+                                    @endif
+                                    <flux:radio value="manual" :label="__('Manual')" />
+                                    <flux:radio value="none" :label="__('Sin puntaje')" />
+                                </flux:radio.group>
                             </div>
+
+                            @if (($question['scoring_mode'] ?? null) === 'manual')
+                                <flux:callout variant="info" icon="information-circle" :heading="__('Calificación manual')" :text="__('No hay una respuesta objetivamente correcta: al revisar cada respuesta, el profesor decidirá si otorga los :points puntos configurados.', ['points' => $question['points'] ?? 0])" />
+                            @endif
 
                             @if ($question['answer_type'] === 'choice')
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -160,10 +170,10 @@
                                     </flux:radio.group>
 
                                     @if (($question['answer_mode'] ?? null) === 'multiple')
-                                        <flux:input wire:model="questions.{{ $i }}.min_selections" type="number" min="1" max="3" :label="__('Mínimo de opciones correctas obligatorias')" />
+                                        <flux:input wire:model="questions.{{ $i }}.min_selections" type="number" min="1" max="3" :label="__('Mínimo de opciones a seleccionar')" />
                                     @endif
 
-                                    @if ($question['is_scored'] ?? false)
+                                    @if (($question['scoring_mode'] ?? null) !== 'manual')
                                         <flux:checkbox wire:model="questions.{{ $i }}.auto_verify" :label="__('Auto-verificar al responder (sin revisión del profesor)')" />
                                     @endif
                                 </div>
@@ -179,19 +189,21 @@
                                     <div class="space-y-2">
                                         @foreach ($question['options'] as $j => $option)
                                             <div wire:key="question-{{ $i }}-option-{{ $j }}" class="flex items-center gap-2">
-                                                @if (($question['answer_mode'] ?? null) === 'multiple')
-                                                    <flux:checkbox wire:model="questions.{{ $i }}.options.{{ $j }}.is_correct" />
-                                                @else
-                                                    <button
-                                                        type="button"
-                                                        wire:click="selectSingleCorrectOption({{ $i }}, {{ $j }})"
-                                                        class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ ($option['is_correct'] ?? false) ? 'border-teal-deep bg-teal-deep' : 'border-zinc-300 dark:border-zinc-600' }}"
-                                                        aria-label="{{ __('Marcar como correcta') }}"
-                                                    >
-                                                        @if ($option['is_correct'] ?? false)
-                                                            <span class="size-2 rounded-full bg-white"></span>
-                                                        @endif
-                                                    </button>
+                                                @if (($question['scoring_mode'] ?? null) === 'automatic')
+                                                    @if (($question['answer_mode'] ?? null) === 'multiple')
+                                                        <flux:checkbox wire:model="questions.{{ $i }}.options.{{ $j }}.is_correct" />
+                                                    @else
+                                                        <button
+                                                            type="button"
+                                                            wire:click="selectSingleCorrectOption({{ $i }}, {{ $j }})"
+                                                            class="flex size-5 shrink-0 items-center justify-center rounded-full border-2 {{ ($option['is_correct'] ?? false) ? 'border-teal-deep bg-teal-deep' : 'border-zinc-300 dark:border-zinc-600' }}"
+                                                            aria-label="{{ __('Marcar como correcta') }}"
+                                                        >
+                                                            @if ($option['is_correct'] ?? false)
+                                                                <span class="size-2 rounded-full bg-white"></span>
+                                                            @endif
+                                                        </button>
+                                                    @endif
                                                 @endif
 
                                                 <flux:input wire:model="questions.{{ $i }}.options.{{ $j }}.label" :placeholder="__('Texto de la opción')" class="grow" />
@@ -201,13 +213,33 @@
                                         @endforeach
                                     </div>
 
+                                    @error("questions.{$i}.options")
+                                        <flux:text class="mt-2 text-sm font-medium text-red-500 dark:text-red-400">{{ $message }}</flux:text>
+                                    @enderror
+                                    @error("questions.{$i}.answer_mode")
+                                        <flux:text class="mt-2 text-sm font-medium text-red-500 dark:text-red-400">{{ $message }}</flux:text>
+                                    @enderror
+                                    @error("questions.{$i}.min_selections")
+                                        <flux:text class="mt-2 text-sm font-medium text-red-500 dark:text-red-400">{{ $message }}</flux:text>
+                                    @enderror
+
                                     <flux:text class="mt-2 text-xs text-brand-text-muted!">
-                                        {{ __('Única: marca la única opción correcta. Múltiple: marca 2 o 3 opciones correctas y define cuántas son obligatorias como mínimo.') }}
+                                        @if (($question['scoring_mode'] ?? null) === 'automatic')
+                                            {{ __('Única: marca la única opción correcta. Múltiple: marca 2 o 3 opciones correctas y define cuántas son obligatorias como mínimo.') }}
+                                        @elseif (($question['scoring_mode'] ?? null) === 'manual')
+                                            {{ __('No hay opción correcta: el profesor decidirá al revisar cada respuesta si otorga el puntaje.') }}
+                                        @else
+                                            {{ __('Pregunta sin puntaje (de corte reflexivo/psicológico): no tiene respuesta correcta. Si "Auto-verificar" está desactivado, un profesor revisará e interpretará la respuesta manualmente.') }}
+                                        @endif
                                     </flux:text>
                                 </div>
                             @else
                                 <flux:text class="text-sm text-brand-text-muted!">
-                                    {{ __('El usuario deberá adjuntar un archivo (foto, documento, PDF, etc.) y un profesor revisará y verificará manualmente esta pregunta.') }}
+                                    @if (($question['scoring_mode'] ?? null) === 'manual')
+                                        {{ __('El usuario deberá adjuntar un archivo (foto, documento, PDF, etc.); un profesor revisará la evidencia y decidirá si otorga los :points puntos configurados.', ['points' => $question['points'] ?? 0]) }}
+                                    @else
+                                        {{ __('El usuario deberá adjuntar un archivo (foto, documento, PDF, etc.) y un profesor revisará esta pregunta manualmente. No otorga puntos.') }}
+                                    @endif
                                 </flux:text>
                             @endif
                         </div>

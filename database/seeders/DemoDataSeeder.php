@@ -4,6 +4,9 @@ namespace Database\Seeders;
 
 use App\Models\Challenge;
 use App\Models\ChallengeCompletion;
+use App\Models\ChallengeQuestion;
+use App\Models\ChallengeQuestionAnswer;
+use App\Models\ChallengeQuestionOption;
 use App\Models\Group;
 use App\Models\Institution;
 use App\Models\InstitutionMembership;
@@ -151,13 +154,20 @@ class DemoDataSeeder extends Seeder
             ['target_role' => 'teacher', 'category' => 'inclusion', 'difficulty' => 'medium', 'points' => 50],
             ['target_role' => 'guardian', 'category' => 'community', 'difficulty' => 'easy', 'points' => 30],
             ['target_role' => 'student', 'category' => 'community', 'difficulty' => 'hard', 'points' => 80],
+            ['target_role' => 'student', 'category' => 'environment', 'difficulty' => 'easy', 'points' => 25],
+            ['target_role' => 'student', 'category' => 'inclusion', 'difficulty' => 'medium', 'points' => 45],
         ])->map(function (array $attributes) use ($pedagogue) {
-            return Challenge::create($attributes + [
+            $challenge = Challenge::create($attributes + [
                 'title' => fake()->sentence(4),
                 'description' => fake()->paragraph(),
                 'status' => 'published',
+                'starts_at' => now()->subDays(fake()->numberBetween(1, 20)),
                 'created_by' => $pedagogue->id,
             ]);
+
+            $this->seedQuestions($challenge);
+
+            return $challenge;
         });
 
         // Restrict the last challenge to a single institution; the rest stay open to all (no pivot rows).
@@ -166,38 +176,89 @@ class DemoDataSeeder extends Seeder
         $studentChallenges = $challenges->where('target_role', 'student')->values();
         $students = $studentsByInstitution[$institutions[0]->id];
 
-        ChallengeCompletion::create([
+        // Verified: correct choice answer + a manually-approved evidence answer.
+        $completion = ChallengeCompletion::create([
             'challenge_id' => $studentChallenges[0]->id,
             'institution_membership_id' => $students[0]->activeMembership->id,
             'user_id' => $students[0]->user_id,
-            'status' => 'verified',
-            'points_earned' => $studentChallenges[0]->points,
-            'submitted_at' => now()->subDays(5),
-            'verified_at' => now()->subDays(4),
+            'status' => 'pending',
+            'origin' => 'class_session',
+            'started_at' => now()->subDays(5)->subMinutes(12),
         ]);
+        [$choiceQuestion, $evidenceQuestion] = $studentChallenges[0]->questions()->orderBy('id')->get()->all();
+        ChallengeQuestionAnswer::record($completion, $choiceQuestion, [$choiceQuestion->options()->where('is_correct', true)->value('id')]);
+        $evidenceAnswer = ChallengeQuestionAnswer::record($completion, $evidenceQuestion, [], 'demo/evidence-placeholder.jpg');
+        $evidenceAnswer->decide('verified', $pedagogue);
+        $completion->recalculateStatus();
 
-        ChallengeCompletion::create([
+        // Submitted: both questions answered, evidence still awaiting review.
+        $completion = ChallengeCompletion::create([
             'challenge_id' => $studentChallenges[1]->id,
             'institution_membership_id' => $students[1]->activeMembership->id,
             'user_id' => $students[1]->user_id,
-            'status' => 'submitted',
-            'submitted_at' => now()->subDay(),
+            'status' => 'pending',
+            'origin' => 'guardian',
+            'started_at' => now()->subDay()->subMinutes(25),
         ]);
+        [$choiceQuestion, $evidenceQuestion] = $studentChallenges[1]->questions()->orderBy('id')->get()->all();
+        ChallengeQuestionAnswer::record($completion, $choiceQuestion, [$choiceQuestion->options()->where('is_correct', true)->value('id')]);
+        ChallengeQuestionAnswer::record($completion, $evidenceQuestion, [], 'demo/evidence-placeholder.jpg');
+        $completion->recalculateStatus();
 
-        ChallengeCompletion::create([
+        // Rejected: picked the wrong option on the scored choice question.
+        $completion = ChallengeCompletion::create([
             'challenge_id' => $studentChallenges[0]->id,
             'institution_membership_id' => $students[2]->activeMembership->id,
             'user_id' => $students[2]->user_id,
-            'status' => 'rejected',
-            'submitted_at' => now()->subDays(3),
-            'verified_at' => now()->subDays(2),
+            'status' => 'pending',
+            'origin' => 'class_session',
+            'started_at' => now()->subDays(3)->subMinutes(8),
         ]);
+        $choiceQuestion = $studentChallenges[0]->questions()->where('answer_type', 'choice')->firstOrFail();
+        ChallengeQuestionAnswer::record($completion, $choiceQuestion, [$choiceQuestion->options()->where('is_correct', false)->value('id')]);
+        $completion->recalculateStatus();
 
+        // Pending: hasn't answered anything yet.
         ChallengeCompletion::create([
             'challenge_id' => $studentChallenges[2]->id,
             'institution_membership_id' => $transferredStudentMembership->id,
             'user_id' => $transferredStudentMembership->user_id,
             'status' => 'pending',
+        ]);
+    }
+
+    /**
+     * Every challenge now requires at least one question to be creatable through the real UI
+     * (ManageChallenges validation): a scored single-choice question plus a reflective evidence one.
+     */
+    protected function seedQuestions(Challenge $challenge): void
+    {
+        $choicePoints = intdiv($challenge->points, 2);
+
+        $choiceQuestion = ChallengeQuestion::create([
+            'challenge_id' => $challenge->id,
+            'title' => '¿Cuál opción refleja mejor lo aprendido en este reto?',
+            'points' => $choicePoints,
+            'answer_type' => 'choice',
+            'answer_mode' => 'single',
+            'scoring_mode' => 'automatic',
+            'auto_verify' => true,
+        ]);
+
+        collect(['Respuesta correcta', 'Respuesta incorrecta A', 'Respuesta incorrecta B'])
+            ->each(fn ($label, $i) => ChallengeQuestionOption::create([
+                'challenge_question_id' => $choiceQuestion->id,
+                'label' => $label,
+                'is_correct' => $i === 0,
+            ]));
+
+        ChallengeQuestion::create([
+            'challenge_id' => $challenge->id,
+            'title' => 'Sube una evidencia de lo realizado.',
+            'points' => 0,
+            'answer_type' => 'evidence',
+            'scoring_mode' => 'none',
+            'auto_verify' => false,
         ]);
     }
 }

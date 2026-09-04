@@ -71,6 +71,10 @@
                             <flux:sidebar.item icon="check-badge" :href="route('challenges.verify')" :current="request()->routeIs('challenges.verify')" wire:navigate>
                                 {{ __('Verificar retos') }}
                             </flux:sidebar.item>
+
+                            <flux:sidebar.item icon="qr-code" :href="route('class-sessions.index')" :current="request()->routeIs('class-sessions.index')" wire:navigate>
+                                {{ __('Sesiones de retos') }}
+                            </flux:sidebar.item>
                         @endcan
 
                         @can('view-challenge-statistics')
@@ -151,6 +155,8 @@
                 </flux:menu>
             </flux:dropdown>
         </flux:header>
+
+        <livewire:guardians.impersonation-banner />
 
         {{ $slot }}
 

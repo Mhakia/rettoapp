@@ -25,6 +25,8 @@ use App\Livewire\Challenges\Index as ChallengesIndex;
 use App\Livewire\Challenges\ManageChallenges;
 use App\Livewire\Challenges\Statistics;
 use App\Livewire\Challenges\VerificationQueue;
+use App\Livewire\ClassSessions\Index as ClassSessionsIndex;
+use App\Livewire\ClassSessions\Join as ClassSessionsJoin;
 use App\Livewire\Institutions\Create as InstitutionsCreate;
 use App\Livewire\Institutions\Index as InstitutionsIndex;
 use App\Livewire\Institutions\Show as InstitutionsShow;
@@ -33,6 +35,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', HomeController::class)
     ->middleware('guest')
     ->name('home');
+
+Route::livewire('join', ClassSessionsJoin::class)
+    ->middleware('throttle:20,1')
+    ->name('class-sessions.join');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'dashboard')->name('dashboard');
@@ -137,6 +143,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('challenges/verify', VerificationQueue::class)
         ->middleware('role:teacher')
         ->name('challenges.verify');
+
+    Route::livewire('class-sessions', ClassSessionsIndex::class)
+        ->middleware('role:teacher')
+        ->name('class-sessions.index');
 
     Route::livewire('challenges/statistics', Statistics::class)
         ->middleware('role:pedagogue|super_admin')

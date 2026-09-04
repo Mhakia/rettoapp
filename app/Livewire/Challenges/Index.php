@@ -128,7 +128,7 @@ class Index extends Component
                     'answer_type' => $question->answer_type,
                     'answer_mode' => $question->answer_mode,
                     'min_selections' => $question->min_selections,
-                    'is_scored' => $question->is_scored,
+                    'scoring_mode' => $question->scoring_mode,
                     'options' => $question->options->map(fn ($option) => [
                         'label' => $option->label,
                         'is_correct' => $option->is_correct,

@@ -61,7 +61,7 @@ class ManageChallenges extends Component
 
     /**
      * Each item: id, title, description, points, answer_type, answer_mode, min_selections,
-     * is_scored, auto_verify, options[] (id, label, is_correct).
+     * scoring_mode, auto_verify, options[] (id, label, is_correct).
      *
      * @var array<int, array<string, mixed>>
      */
@@ -164,7 +164,7 @@ class ManageChallenges extends Component
             'answer_type' => $question->answer_type,
             'answer_mode' => $question->answer_mode,
             'min_selections' => $question->min_selections,
-            'is_scored' => $question->is_scored,
+            'scoring_mode' => $question->scoring_mode,
             'auto_verify' => $question->auto_verify,
             'options' => $question->options->map(fn ($option) => [
                 'id' => $option->id,
@@ -246,10 +246,36 @@ class ManageChallenges extends Component
             $this->questions[$index]['answer_mode'] = null;
             $this->questions[$index]['min_selections'] = null;
             $this->questions[$index]['auto_verify'] = false;
+
+            // Automatic scoring requires comparing against a correct option, which doesn't exist for evidence.
+            if ($this->questions[$index]['scoring_mode'] === 'automatic') {
+                $this->questions[$index]['scoring_mode'] = 'manual';
+            }
         }
 
-        if (str_ends_with($key, '.answer_mode') && $this->questions[$index]['answer_mode'] !== 'multiple') {
-            $this->questions[$index]['min_selections'] = null;
+        if (str_ends_with($key, '.answer_mode')) {
+            if ($this->questions[$index]['answer_mode'] !== 'multiple') {
+                $this->questions[$index]['min_selections'] = null;
+            }
+
+            // A correctness selection from the previous mode may not satisfy the new mode's
+            // rules (e.g. 2 correct options kept after switching to single-choice), so clear it
+            // and force the user to re-mark it explicitly.
+            foreach ($this->questions[$index]['options'] ?? [] as $i => $option) {
+                $this->questions[$index]['options'][$i]['is_correct'] = false;
+            }
+        }
+
+        if (str_ends_with($key, '.scoring_mode')) {
+            if ($this->questions[$index]['scoring_mode'] === 'manual') {
+                $this->questions[$index]['auto_verify'] = false;
+            }
+
+            if ($this->questions[$index]['scoring_mode'] !== 'automatic') {
+                foreach ($this->questions[$index]['options'] ?? [] as $i => $option) {
+                    $this->questions[$index]['options'][$i]['is_correct'] = false;
+                }
+            }
         }
     }
 
@@ -324,7 +350,7 @@ class ManageChallenges extends Component
             'questions.*.answer_type' => ['required', Rule::in(['choice', 'evidence'])],
             'questions.*.answer_mode' => ['nullable', Rule::in(['single', 'multiple'])],
             'questions.*.min_selections' => ['nullable', 'integer', 'min:1', 'max:3'],
-            'questions.*.is_scored' => ['boolean'],
+            'questions.*.scoring_mode' => ['required', Rule::in(['automatic', 'manual', 'none'])],
             'questions.*.auto_verify' => ['boolean'],
             'questions.*.options' => ['array', 'max:6'],
             'questions.*.options.*.id' => ['nullable', 'integer'],
@@ -356,6 +382,10 @@ class ManageChallenges extends Component
 
         foreach ($questions as $i => $question) {
             if ($question['answer_type'] !== 'choice') {
+                if (($question['scoring_mode'] ?? 'none') === 'automatic') {
+                    $errors["questions.$i.scoring_mode"] = [__('Una pregunta de evidencia no puede calificarse automáticamente; usa "Manual" o "Sin puntaje".')];
+                }
+
                 continue;
             }
 
@@ -373,6 +403,18 @@ class ManageChallenges extends Component
                 continue;
             }
 
+            if ($question['answer_mode'] === 'multiple' && ($question['min_selections'] ?? null) === null) {
+                $errors["questions.$i.min_selections"] = [__('Define el mínimo de opciones que se deben seleccionar.')];
+
+                continue;
+            }
+
+            // Reflective/psychological questions have no correct answer (a teacher reviews and
+            // interprets them manually), so they're exempt from the correctness rules below.
+            if (($question['scoring_mode'] ?? 'none') !== 'automatic') {
+                continue;
+            }
+
             $correctCount = collect($options)->where('is_correct', true)->count();
 
             if ($question['answer_mode'] === 'single' && $correctCount !== 1) {
@@ -382,7 +424,7 @@ class ManageChallenges extends Component
             if ($question['answer_mode'] === 'multiple') {
                 if ($correctCount < 2 || $correctCount > 3) {
                     $errors["questions.$i.options"] = [__('Marca entre 2 y 3 opciones correctas.')];
-                } elseif (($question['min_selections'] ?? null) === null || $question['min_selections'] > $correctCount) {
+                } elseif ($question['min_selections'] > $correctCount) {
                     $errors["questions.$i.min_selections"] = [__('El mínimo de selecciones debe estar entre 1 y :max.', ['max' => $correctCount])];
                 }
             }
@@ -476,7 +518,7 @@ class ManageChallenges extends Component
             'answer_type' => 'choice',
             'answer_mode' => 'single',
             'min_selections' => null,
-            'is_scored' => true,
+            'scoring_mode' => 'automatic',
             'auto_verify' => true,
             'options' => [$this->defaultOption(), $this->defaultOption()],
         ];

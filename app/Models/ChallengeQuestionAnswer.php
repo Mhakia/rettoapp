@@ -98,11 +98,11 @@ class ChallengeQuestionAnswer extends Model
                 $answer->selectedOptions()->sync($optionIds);
 
                 if ($question->auto_verify) {
-                    $correct = $question->is_scored ? $question->isSelectionCorrect($optionIds) : true;
+                    $correct = $question->scoring_mode === 'automatic' ? $question->isSelectionCorrect($optionIds) : true;
 
                     $answer->fill([
-                        'status' => $question->is_scored && ! $correct ? 'rejected' : 'verified',
-                        'points_earned' => $correct && $question->is_scored ? $question->points : 0,
+                        'status' => $question->scoring_mode === 'automatic' && ! $correct ? 'rejected' : 'verified',
+                        'points_earned' => $correct && $question->scoring_mode !== 'none' ? $question->points : 0,
                         'verified_at' => now(),
                     ]);
                 } else {
@@ -122,13 +122,15 @@ class ChallengeQuestionAnswer extends Model
     }
 
     /**
-     * Manually verify/reject an answer that required review (evidence, or choice with auto_verify off).
+     * Manually verify/reject an answer that required review (evidence, manual scoring, or choice
+     * with auto_verify off). For scoring_mode='manual' this is how a teacher decides whether the
+     * configured points are awarded at all, since there's no correct answer to compare against.
      */
     public function decide(string $status, User $verifier): void
     {
         $this->update([
             'status' => $status,
-            'points_earned' => $status === 'verified' ? ($this->question->is_scored ? $this->question->points : 0) : null,
+            'points_earned' => $status === 'verified' ? ($this->question->scoring_mode !== 'none' ? $this->question->points : 0) : null,
             'verified_by' => $verifier->id,
             'verified_at' => now(),
         ]);
