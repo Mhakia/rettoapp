@@ -73,13 +73,21 @@ class GenerateSubscriptionInvoicesCommand extends Command
     }
 
     /**
-     * Wompi has no invoice concept — instead we create a one-time Payment
-     * Link for the exact amount and store its id as `wompi_reference` so
-     * the webhook controller can match the later `transaction.updated`
-     * event back to this invoice.
+     * Wompi has no invoice concept. If the institution already registered a
+     * reusable payment source, charge it automatically (Credential On File) —
+     * otherwise fall back to creating a one-time Payment Link and notifying
+     * the institution, exactly as before.
      */
     protected function sendToWompi(Invoice $invoice): void
     {
+        $subscription = $invoice->subscription;
+
+        if ($subscription->wompi_payment_source_id) {
+            $this->chargeWompiPaymentSource($invoice, $subscription);
+
+            return;
+        }
+
         $link = $this->wompi->createPaymentLink(
             name: $invoice->number,
             description: "Suscripción {$invoice->institution->name} — {$invoice->period_start->format('M Y')}",
@@ -91,5 +99,24 @@ class GenerateSubscriptionInvoicesCommand extends Command
 
         // Send payment link to institution's contact email
         $invoice->institution->notify(new PaymentLinkReady($invoice));
+    }
+
+    /**
+     * Charge the institution's saved payment source directly. `wompi_reference`
+     * is set to our own invoice number (same value we send as `reference`), so
+     * the webhook controller can match the resulting `transaction.updated`
+     * event back to this invoice exactly like it already does for Payment Links.
+     */
+    protected function chargeWompiPaymentSource(Invoice $invoice, InstitutionSubscription $subscription): void
+    {
+        $this->wompi->createRecurrentTransaction(
+            paymentSourceId: $subscription->wompi_payment_source_id,
+            amountInCents: (int) round($invoice->total * 100),
+            reference: $invoice->number,
+            customerEmail: $invoice->institution->contact_email,
+            currency: $invoice->currency,
+        );
+
+        $invoice->update(['wompi_reference' => $invoice->number]);
     }
 }

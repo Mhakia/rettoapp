@@ -71,6 +71,12 @@
     @apply grid gap-2;
 }
 
+/* Subtle blur behind any Flux modal, instead of the plain dim overlay. */
+ui-modal dialog::backdrop {
+    background-color: rgb(0 0 0 / 20%);
+    backdrop-filter: blur(3px);
+}
+
 [data-flux-label] {
     @apply  !mb-0 !leading-tight;
 }

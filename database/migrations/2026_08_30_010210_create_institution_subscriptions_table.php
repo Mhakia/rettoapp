@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('discount_type')->nullable(); // percentage | fixed
             $table->decimal('discount_value', 12, 2)->nullable();
 
-            $table->string('billing_cycle')->default('monthly'); // monthly | quarterly | annual
+            $table->string('billing_cycle')->default('monthly'); // monthly | quarterly | yearly
             $table->json('features')->nullable(); // overrides the plan's features for this institution
 
             $table->string('status')->default('active'); // active | paused | cancelled | ended

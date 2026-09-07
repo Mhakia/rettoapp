@@ -4,6 +4,9 @@
             <flux:navlist.item :href="route('profile.edit')" wire:navigate>{{ __('Profile') }}</flux:navlist.item>
             <flux:navlist.item :href="route('security.edit')" wire:navigate>{{ __('Security') }}</flux:navlist.item>
             <flux:navlist.item :href="route('appearance.edit')" wire:navigate>{{ __('Appearance') }}</flux:navlist.item>
+            @role('institution_admin')
+                <flux:navlist.item :href="route('billing.edit')" wire:navigate>{{ __('Billing') }}</flux:navlist.item>
+            @endrole
         </flux:navlist>
     </div>
 

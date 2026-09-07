@@ -17,7 +17,7 @@ return new class extends Migration
             $table->decimal('base_price', 12, 2);
             $table->unsignedInteger('included_students');
             $table->decimal('price_per_extra_student', 12, 2);
-            $table->string('billing_cycle')->default('monthly'); // monthly | quarterly | annual
+            $table->string('billing_cycle')->default('monthly'); // monthly | quarterly | yearly
             $table->json('features')->nullable();
             $table->boolean('is_public')->default(true);
             $table->boolean('is_active')->default(true);

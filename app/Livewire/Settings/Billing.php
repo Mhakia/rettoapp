@@ -16,6 +16,18 @@ class Billing extends Component
         return Auth::user()->institution;
     }
 
+    #[Computed]
+    public function subscription()
+    {
+        return $this->institution->activeSubscription;
+    }
+
+    #[Computed]
+    public function wompiEnabled(): bool
+    {
+        return in_array('wompi', config('services.billing.gateways', []), true);
+    }
+
     public function manage()
     {
         return $this->institution->redirectToBillingPortal(route('billing.edit'));

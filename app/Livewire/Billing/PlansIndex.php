@@ -5,8 +5,8 @@ namespace App\Livewire\Billing;
 use App\Models\Plan;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,7 +17,6 @@ class PlansIndex extends Component
 
     public string $search = '';
 
-    #[Url]
     public bool $showForm = false;
 
     public ?Plan $editingPlan = null;
@@ -49,6 +48,7 @@ class PlansIndex extends Component
         $this->authorize('create', Plan::class);
         $this->editingPlan = null;
         $this->showForm = true;
+        $this->dispatch('modal-show', name: 'plan-form');
     }
 
     public function editPlan(Plan $plan): void
@@ -56,6 +56,7 @@ class PlansIndex extends Component
         $this->authorize('update', $plan);
         $this->editingPlan = $plan;
         $this->showForm = true;
+        $this->dispatch('modal-show', name: 'plan-form');
     }
 
     public function deletePlan(Plan $plan): void
@@ -65,10 +66,12 @@ class PlansIndex extends Component
         Flux::toast()->success(__('billing_plan_deleted'));
     }
 
+    #[On('plan-saved')]
     public function closePlanForm(): void
     {
         $this->showForm = false;
         $this->editingPlan = null;
+        $this->dispatch('modal-close', name: 'plan-form');
     }
 
     public function render()

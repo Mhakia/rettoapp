@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WompiPaymentSourceController;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Billing;
 use App\Livewire\Settings\Profile;
@@ -24,4 +25,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('settings/billing', Billing::class)
         ->middleware('role:institution_admin')
         ->name('billing.edit');
+
+    Route::post('settings/billing/wompi/payment-source', WompiPaymentSourceController::class)
+        ->middleware('role:institution_admin')
+        ->name('billing.wompi.payment-source');
 });

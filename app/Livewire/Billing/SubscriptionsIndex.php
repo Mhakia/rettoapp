@@ -20,11 +20,6 @@ class SubscriptionsIndex extends Component
     #[Url]
     public string $status = '';
 
-    #[Url]
-    public bool $showForm = false;
-
-    public ?InstitutionSubscription $editingSubscription = null;
-
     public function mount(): void
     {
         $this->authorize('viewAny', InstitutionSubscription::class);
@@ -53,31 +48,11 @@ class SubscriptionsIndex extends Component
             ->paginate(10);
     }
 
-    public function createSubscription(): void
-    {
-        $this->authorize('create', InstitutionSubscription::class);
-        $this->editingSubscription = null;
-        $this->showForm = true;
-    }
-
-    public function editSubscription(InstitutionSubscription $subscription): void
-    {
-        $this->authorize('update', $subscription);
-        $this->editingSubscription = $subscription;
-        $this->showForm = true;
-    }
-
     public function deleteSubscription(InstitutionSubscription $subscription): void
     {
         $this->authorize('delete', $subscription);
         $subscription->delete();
-        Flux::toast()->success('Suscripción eliminada.');
-    }
-
-    public function closeSubscriptionForm(): void
-    {
-        $this->showForm = false;
-        $this->editingSubscription = null;
+        Flux::toast()->success(__('billing_subscription_deleted'));
     }
 
     public function render()

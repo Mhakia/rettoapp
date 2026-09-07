@@ -50,6 +50,7 @@ class InstitutionSubscription extends Model
         'started_at',
         'ended_at',
         'notes',
+        'wompi_payment_source_id',
     ];
 
     public function getActivitylogOptions(): LogOptions
@@ -124,7 +125,7 @@ class InstitutionSubscription extends Model
 
         $end = match ($this->billing_cycle) {
             'quarterly' => $start->copy()->addMonths(3)->subDay(),
-            'annual' => $start->copy()->addYear()->subDay(),
+            'yearly' => $start->copy()->addYear()->subDay(),
             default => $start->copy()->addMonth()->subDay(),
         };
 

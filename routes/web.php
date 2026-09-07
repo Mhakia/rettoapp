@@ -22,6 +22,7 @@ use App\Livewire\Alerts\CreateAlert;
 use App\Livewire\Alerts\Index as AlertsIndex;
 use App\Livewire\Billing\InvoicesIndex;
 use App\Livewire\Billing\PlansIndex;
+use App\Livewire\Billing\SubscriptionForm;
 use App\Livewire\Billing\SubscriptionsIndex;
 use App\Livewire\Challenges\Catalog;
 use App\Livewire\Challenges\Index as ChallengesIndex;
@@ -77,6 +78,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('billing/subscriptions', SubscriptionsIndex::class)
         ->middleware('role:super_admin')
         ->name('billing.subscriptions.index');
+
+    Route::livewire('billing/subscriptions/create', SubscriptionForm::class)
+        ->middleware('role:super_admin')
+        ->name('billing.subscriptions.create');
+
+    Route::livewire('billing/subscriptions/{subscription}/edit', SubscriptionForm::class)
+        ->middleware('role:super_admin')
+        ->name('billing.subscriptions.edit');
 
     Route::livewire('billing/invoices', InvoicesIndex::class)
         ->middleware('role:super_admin')

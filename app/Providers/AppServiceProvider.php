@@ -20,7 +20,9 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(WompiClient::class, fn () => new WompiClient(
-            privateKey: config('services.wompi.private_key'),
+            privateKey: config('services.wompi.private_key') ?? '',
+            publicKey: config('services.wompi.public_key') ?? '',
+            integritySecret: config('services.wompi.integrity_secret') ?? '',
         ));
 
         $this->app->singleton(WompiSignatureValidator::class, fn () => new WompiSignatureValidator(

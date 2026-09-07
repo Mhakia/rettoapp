@@ -49,7 +49,11 @@ return [
 
     'wompi' => [
         'private_key' => env('WOMPI_PRIVATE_KEY'),
+        'public_key' => env('WOMPI_PUBLIC_KEY'),
         'events_secret' => env('WOMPI_EVENTS_SECRET'),
+        // Secreto de integridad (distinto de la llave privada/pública y del secreto
+        // de eventos), usado para firmar transacciones creadas con fuentes de pago.
+        'integrity_secret' => env('WOMPI_INTEGRITY_SECRET'),
     ],
 
 ];
