@@ -113,7 +113,7 @@
     "subscription_status_paused": "Paused",
     "billing_subscription_summary": "Base: :amount · Students: :count · Extra: :price",
     "billing_subscription_confirm_delete": "Delete this subscription?",
-    "billing_subscription_duplicate_active": "This institution already has another active subscription. Pause or cancel it before activating this one.",,
+    "billing_subscription_duplicate_active": "This institution already has another active subscription. Pause or cancel it before activating this one.",
     "billing_subscriptions_no_results": "No subscriptions found.",
     "billing_subscription_edit_title": "Edit subscription",
     "billing_subscription_create_title": "Create subscription",

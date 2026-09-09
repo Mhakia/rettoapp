@@ -304,7 +304,9 @@ return [
         ],
 
         'ignore' => [
-            // 'TRUSS-IDX-001' => ['audit_log.actor_id'],
+            // The unique btree index enforces NIT uniqueness while the trgm GIN index
+            // powers ILIKE '%term%' search; both are needed despite covering the same column.
+            'TRUSS-IDX-002' => ['institutions.institutions_nit_unique'],
         ],
 
         'fail_on' => env('TRUSS_DOCTOR_FAIL_ON', 'error'),
