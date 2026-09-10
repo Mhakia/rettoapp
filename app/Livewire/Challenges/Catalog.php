@@ -6,6 +6,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeCompletion;
 use App\Models\ChallengeView;
 use Flux\Flux;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +22,8 @@ class Catalog extends Component
 
     public ?int $submittingChallengeId = null;
 
-    public mixed $evidence = null;
+    /** Keyed by challenge ulid so a file picked for one card never leaks into another. */
+    public array $evidence = [];
 
     /**
      * Stamps a first-view timestamp for each visible challenge (separate from
@@ -49,6 +51,7 @@ class Catalog extends Component
         $user = Auth::user();
 
         $query = Challenge::visibleTo($user)
+            ->withCount('questions')
             ->with(['completions' => fn ($query) => $query->where('user_id', $user->id)]);
 
         if ($lockedUlid = session('locked_challenge_ulid')) {
@@ -65,34 +68,66 @@ class Catalog extends Component
 
         $this->authorize('complete', $challenge);
 
-        $this->validate([
-            'evidence' => ['nullable', 'file', 'max:10240'],
-        ]);
+        // Retos con preguntas se responden por pregunta (no implementado aún); bloquear el formulario genérico.
+        if ($challenge->questions()->exists()) {
+            Flux::toast(variant: 'danger', text: __('challenge_has_questions_blocked'));
 
-        $evidencePath = $this->evidence
-            ? Storage::disk('s3')->putFile('challenge-evidence', $this->evidence)
-            : null;
+            return;
+        }
 
         $selfReported = in_array($challenge->target_role, ['teacher', 'guardian']);
 
-        $startedAt = ChallengeView::where('challenge_id', $challenge->id)
+        // Sin membresía activa, la completión quedaría invisible para siempre en la cola de verificación.
+        if (! $selfReported && ! $user->activeMembership) {
+            Flux::toast(variant: 'danger', text: __('challenge_no_active_membership'));
+
+            return;
+        }
+
+        // Defensa contra doble clic/doble envío (además del índice único en BD): si ya existe,
+        // saltar validación/subida/creación pero seguir el mismo flujo de éxito de abajo.
+        $alreadyCompleted = ChallengeCompletion::where('challenge_id', $challenge->id)
             ->where('user_id', $user->id)
-            ->value('started_at');
+            ->exists();
 
-        ChallengeCompletion::create([
-            'challenge_id' => $challenge->id,
-            'institution_membership_id' => $user->activeMembership?->id,
-            'user_id' => $user->id,
-            'status' => $selfReported ? 'verified' : 'submitted',
-            'evidence_path' => $evidencePath,
-            'points_earned' => $selfReported ? $challenge->points : null,
-            'started_at' => $startedAt,
-            'submitted_at' => now(),
-            'origin' => session('challenge_origin'),
-            'verified_at' => $selfReported ? now() : null,
-        ]);
+        if (! $alreadyCompleted) {
+            $this->validate([
+                "evidence.{$challengeUlid}" => ['nullable', 'file', 'max:10240'],
+            ]);
 
-        $this->reset(['submittingChallengeId', 'evidence']);
+            $evidenceFile = $this->evidence[$challengeUlid] ?? null;
+
+            $evidencePath = $evidenceFile
+                ? Storage::disk('s3')->putFile('challenge-evidence', $evidenceFile)
+                : null;
+
+            $startedAt = ChallengeView::where('challenge_id', $challenge->id)
+                ->where('user_id', $user->id)
+                ->value('started_at');
+
+            try {
+                ChallengeCompletion::create([
+                    'challenge_id' => $challenge->id,
+                    'institution_membership_id' => $user->activeMembership?->id,
+                    'user_id' => $user->id,
+                    'status' => $selfReported ? 'verified' : 'submitted',
+                    'evidence_path' => $evidencePath,
+                    'points_earned' => $selfReported ? $challenge->points : null,
+                    'started_at' => $startedAt,
+                    'submitted_at' => now(),
+                    'origin' => session('challenge_origin'),
+                    'verified_at' => $selfReported ? now() : null,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                // Otra petición ganó la carrera y ya la creó: borrar el archivo huérfano que subimos de más.
+                if ($evidencePath) {
+                    Storage::disk('s3')->delete($evidencePath);
+                }
+            }
+        }
+
+        unset($this->evidence[$challengeUlid]);
+        $this->reset(['submittingChallengeId']);
         unset($this->challenges);
 
         // A class-session login is scoped to one specific challenge: close it automatically once answered.
